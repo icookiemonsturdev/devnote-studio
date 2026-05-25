@@ -80,7 +80,7 @@ function SkinsPage() {
           <Sparkles className="h-8 w-8 text-primary mx-auto mb-3" />
           <h1 className="text-4xl font-bold mb-3">Premium Skins</h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Buy individual skins for $2.99 each, or subscribe for $5.99/month and unlock every skin — including future releases.
+            Buy individual skins for $1.99 each, or subscribe for $5.99/month and unlock every skin — including future releases.
           </p>
           {!subscribed && (
             <button
@@ -117,7 +117,7 @@ function SkinsPage() {
                     ) : owned ? (
                       <span className="text-[10px] mono text-primary">OWNED</span>
                     ) : (
-                      <span className="text-[10px] mono text-muted-foreground">$2.99</span>
+                      <span className="text-[10px] mono text-muted-foreground">$1.99</span>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">{s.desc}</p>
@@ -135,7 +135,7 @@ function SkinsPage() {
                       onClick={() => setCheckoutPrice({ priceId: s.priceId!, skinId: s.id })}
                       className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition flex items-center justify-center gap-2"
                     >
-                      <Lock className="h-3.5 w-3.5" /> Unlock $2.99
+                      <Lock className="h-3.5 w-3.5" /> Unlock $1.99
                     </button>
                   )}
                 </div>
