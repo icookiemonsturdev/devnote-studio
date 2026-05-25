@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
-  FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree,
+  FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
   Bold, Italic, Heading1, Heading2, List, ListOrdered, Quote, Code, Link as LinkIcon, Type,
 } from "lucide-react";
 import {
@@ -17,6 +17,7 @@ import { FONTS, getFontStack } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
+  validateSearch: (s: Record<string, unknown>) => ({ dir: typeof s.dir === "string" ? s.dir : undefined }),
   component: AppPage,
 });
 
