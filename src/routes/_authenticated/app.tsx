@@ -298,14 +298,17 @@ function AppPage() {
             </div>
           </div>
         )}
-        {noteQuery.data && (
-          <NoteEditor
-            key={noteQuery.data.id}
-            note={noteQuery.data}
-            onSave={(patch) => saveNote.mutate({ id: noteQuery.data.id, ...patch })}
-            onDelete={() => confirm("Delete this note?") && removeNote.mutate(noteQuery.data.id)}
-          />
-        )}
+        {noteQuery.data && (() => {
+          const n = noteQuery.data;
+          return (
+            <NoteEditor
+              key={n.id}
+              note={n}
+              onSave={(patch) => saveNote.mutate({ id: n.id, ...patch })}
+              onDelete={() => confirm("Delete this note?") && removeNote.mutate(n.id)}
+            />
+          );
+        })()}
       </main>
     </div>
   );
