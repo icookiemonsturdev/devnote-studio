@@ -120,26 +120,53 @@ export type Database = {
         Row: {
           active_skin: string
           avatar_url: string | null
+          body_font: string
           created_at: string
           display_name: string | null
+          heading_font: string
           id: string
           updated_at: string
         }
         Insert: {
           active_skin?: string
           avatar_url?: string | null
+          body_font?: string
           created_at?: string
           display_name?: string | null
+          heading_font?: string
           id: string
           updated_at?: string
         }
         Update: {
           active_skin?: string
           avatar_url?: string | null
+          body_font?: string
           created_at?: string
           display_name?: string | null
+          heading_font?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      skin_purchases: {
+        Row: {
+          created_at: string
+          id: string
+          skin_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skin_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skin_id?: string
+          user_id?: string
         }
         Relationships: []
       }
