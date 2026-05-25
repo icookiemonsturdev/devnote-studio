@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 
 function AppPage() {
   const qc = useQueryClient();
+  const { dir: dirParam } = Route.useSearch();
   const wsFn = useServerFn(getWorkspace);
   const notesFn = useServerFn(getNotesByFolder);
   const noteFn = useServerFn(getNote);
@@ -40,6 +41,14 @@ function AppPage() {
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+
+  // Auto-expand directory passed via ?dir= and select its first folder
+  useEffect(() => {
+    if (!dirParam || !workspace.data) return;
+    setExpandedDirs((s) => new Set([...s, dirParam]));
+    const firstFolder = workspace.data.folders.find((f) => f.directory_id === dirParam);
+    if (firstFolder) setActiveFolder((cur) => cur ?? firstFolder.id);
+  }, [dirParam, workspace.data]);
 
   // Apply skin + fonts from profile
   useEffect(() => {
