@@ -126,7 +126,7 @@ function HomePage() {
                 {/* Notebook cover */}
                 <div
                   className="aspect-[4/5] p-5 flex flex-col justify-between relative"
-                  style={{ background: covers[i % covers.length] }}
+                  style={{ background: coverFor(i) }}
                 >
                   {/* Spine */}
                   <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/20" />
