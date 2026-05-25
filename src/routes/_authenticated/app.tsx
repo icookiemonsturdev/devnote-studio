@@ -466,7 +466,7 @@ function NoteEditor({
       </div>
 
       <textarea
-        ref={(el) => { textareaRef.current = el; }}
+        ref={textareaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Start writing... Use the toolbar above for **bold**, *italic*, # headings, lists, and more."
