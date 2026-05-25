@@ -33,6 +33,103 @@ export const SKINS: Skin[] = [
 
 export const ALL_SKINS_PRICE_ID = "skins_pro_monthly";
 
+// Notebook skins — applied to notebook covers on the home page.
+export interface NotebookSkin {
+  id: string;
+  name: string;
+  desc: string;
+  free: boolean;
+  priceId?: string;
+  // CSS background for the cover. When null, the home page uses its default rotating gradients.
+  cover: string | null;
+  // Swatch colors for previews.
+  swatch: string[];
+}
+
+export const NOTEBOOK_SKINS: NotebookSkin[] = [
+  {
+    id: "nb_default",
+    name: "Classic Rainbow",
+    desc: "Default rotating gradient covers.",
+    free: true,
+    cover: null,
+    swatch: ["hsl(244 70% 50%)", "hsl(200 80% 45%)", "hsl(20 85% 55%)", "hsl(150 60% 40%)"],
+  },
+  {
+    id: "nb_galaxy",
+    name: "Galaxy",
+    desc: "Deep purple to electric blue.",
+    free: false,
+    priceId: "nb_galaxy_199",
+    cover: "linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #7c3aed 100%)",
+    swatch: ["#1e1b4b", "#4338ca", "#7c3aed"],
+  },
+  {
+    id: "nb_ocean",
+    name: "Ocean",
+    desc: "Cool teal to deep blue.",
+    free: false,
+    priceId: "nb_ocean_199",
+    cover: "linear-gradient(135deg, #0c4a6e 0%, #0891b2 60%, #22d3ee 100%)",
+    swatch: ["#0c4a6e", "#0891b2", "#22d3ee"],
+  },
+  {
+    id: "nb_sunset",
+    name: "Sunset",
+    desc: "Warm orange to pink.",
+    free: false,
+    priceId: "nb_sunset_199",
+    cover: "linear-gradient(135deg, #b45309 0%, #ea580c 50%, #db2777 100%)",
+    swatch: ["#b45309", "#ea580c", "#db2777"],
+  },
+  {
+    id: "nb_forest",
+    name: "Forest",
+    desc: "Rich greens, calm and grounded.",
+    free: false,
+    priceId: "nb_forest_199",
+    cover: "linear-gradient(135deg, #14532d 0%, #16a34a 60%, #84cc16 100%)",
+    swatch: ["#14532d", "#16a34a", "#84cc16"],
+  },
+  {
+    id: "nb_gold",
+    name: "Gold Leather",
+    desc: "Black leather with gold accents.",
+    free: false,
+    priceId: "nb_gold_199",
+    cover: "linear-gradient(135deg, #1c1917 0%, #292524 60%, #c9a84c 100%)",
+    swatch: ["#1c1917", "#292524", "#c9a84c"],
+  },
+  {
+    id: "nb_blush",
+    name: "Blush",
+    desc: "Soft pink and lavender.",
+    free: false,
+    priceId: "nb_blush_199",
+    cover: "linear-gradient(135deg, #fce7f3 0%, #f9a8d4 50%, #c084fc 100%)",
+    swatch: ["#fce7f3", "#f9a8d4", "#c084fc"],
+  },
+  {
+    id: "nb_carbon",
+    name: "Carbon",
+    desc: "Sleek dark carbon fiber.",
+    free: false,
+    priceId: "nb_carbon_199",
+    cover: "linear-gradient(135deg, #0a0a0a 0%, #262626 50%, #404040 100%)",
+    swatch: ["#0a0a0a", "#262626", "#404040"],
+  },
+  {
+    id: "nb_kraft",
+    name: "Kraft Paper",
+    desc: "Warm kraft paper texture.",
+    free: false,
+    priceId: "nb_kraft_199",
+    cover: "linear-gradient(135deg, #92400e 0%, #c2855b 50%, #e7d3b0 100%)",
+    swatch: ["#92400e", "#c2855b", "#e7d3b0"],
+  },
+];
+
+
 // Font catalog — Google Fonts loaded in styles.css.
 export interface FontOption {
   id: string;

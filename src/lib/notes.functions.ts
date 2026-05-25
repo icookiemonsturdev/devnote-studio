@@ -151,6 +151,8 @@ export const updateProfile = createServerFn({ method: "POST" })
       active_skin: z.string().min(1).max(40).optional(),
       heading_font: z.string().min(1).max(40).optional(),
       body_font: z.string().min(1).max(40).optional(),
+      active_notebook_skin: z.string().min(1).max(40).optional(),
+
     }).parse(d),
   )
   .handler(async ({ data, context }) => {

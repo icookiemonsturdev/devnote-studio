@@ -7,7 +7,7 @@ import {
   BookOpen, Plus, Settings, Sparkles, LogOut, FileCode2, Trash2,
 } from "lucide-react";
 import { getWorkspace, createDirectory, deleteDirectory } from "@/lib/notes.functions";
-import { getFontStack } from "@/lib/catalog";
+import { getFontStack, NOTEBOOK_SKINS } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -56,8 +56,11 @@ function HomePage() {
   const folders = ws?.folders ?? [];
   const isSubscribed = ws?.subscriptionActive ?? false;
 
-  // Cycle through accent hues for visual variety on notebook covers
-  const covers = [
+  const activeNotebookSkinId: string = ws?.profile?.active_notebook_skin ?? "nb_default";
+  const activeNotebookSkin = NOTEBOOK_SKINS.find((s) => s.id === activeNotebookSkinId) ?? NOTEBOOK_SKINS[0];
+
+  // Default rotating covers (used when the chosen notebook skin has no fixed cover).
+  const defaultCovers = [
     "linear-gradient(135deg, hsl(244 70% 50%), hsl(280 70% 55%))",
     "linear-gradient(135deg, hsl(200 80% 45%), hsl(180 70% 50%))",
     "linear-gradient(135deg, hsl(20 85% 55%), hsl(340 75% 55%))",
@@ -67,6 +70,8 @@ function HomePage() {
     "linear-gradient(135deg, hsl(220 70% 45%), hsl(260 65% 55%))",
     "linear-gradient(135deg, hsl(160 60% 40%), hsl(220 70% 50%))",
   ];
+  const coverFor = (i: number) => activeNotebookSkin.cover ?? defaultCovers[i % defaultCovers.length];
+
 
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-surface)" }}>
@@ -121,7 +126,7 @@ function HomePage() {
                 {/* Notebook cover */}
                 <div
                   className="aspect-[4/5] p-5 flex flex-col justify-between relative"
-                  style={{ background: covers[i % covers.length] }}
+                  style={{ background: coverFor(i) }}
                 >
                   {/* Spine */}
                   <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/20" />

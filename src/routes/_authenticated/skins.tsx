@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Lock, Sparkles, X, Crown } from "lucide-react";
+import { ArrowLeft, Check, Lock, Sparkles, X, Crown, BookOpen, Palette } from "lucide-react";
 import { getWorkspace, updateProfile } from "@/lib/notes.functions";
-import { SKINS, ALL_SKINS_PRICE_ID, FONTS, type SkinId } from "@/lib/catalog";
+import { SKINS, NOTEBOOK_SKINS, ALL_SKINS_PRICE_ID, FONTS, type SkinId } from "@/lib/catalog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/skins")({
   component: SkinsPage,
@@ -27,6 +28,7 @@ function SkinsPage() {
   const purchased: string[] = ws.data?.purchasedSkins ?? [];
   const profile: any = ws.data?.profile;
   const active = (profile?.active_skin as SkinId) ?? "midnight";
+  const activeNotebook: string = profile?.active_notebook_skin ?? "nb_default";
   const headingFont: string = profile?.heading_font ?? "inter";
   const bodyFont: string = profile?.body_font ?? "inter";
 
@@ -43,7 +45,6 @@ function SkinsPage() {
   useEffect(() => {
     if (checkout === "success") {
       toast.success("Payment received! Unlocking…");
-      // Poll briefly for webhook to land.
       const t = setInterval(() => qc.invalidateQueries({ queryKey: ["workspace"] }), 1500);
       setTimeout(() => clearInterval(t), 10000);
     }
@@ -51,7 +52,13 @@ function SkinsPage() {
 
   const setSkin = useMutation({
     mutationFn: (id: string) => profileFn({ data: { active_skin: id } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Skin applied"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Editor skin applied"); },
+    onError: (e) => toast.error((e as Error).message),
+  });
+
+  const setNotebookSkin = useMutation({
+    mutationFn: (id: string) => profileFn({ data: { active_notebook_skin: id } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Notebook skin applied"); },
     onError: (e) => toast.error((e as Error).message),
   });
 
@@ -65,8 +72,8 @@ function SkinsPage() {
     <div className="min-h-screen" style={{ background: "var(--gradient-surface)" }}>
       <PaymentTestModeBanner />
       <header className="container mx-auto px-6 py-6 flex items-center justify-between">
-        <Link to="/app" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to notes
+        <Link to="/home" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" /> Back to notebooks
         </Link>
         {subscribed && (
           <span className="rounded-full bg-primary/15 text-primary mono text-xs px-3 py-1 border border-primary/30 flex items-center gap-1.5">
@@ -75,7 +82,7 @@ function SkinsPage() {
         )}
       </header>
 
-      <main className="container mx-auto px-6 py-10 max-w-5xl space-y-16">
+      <main className="container mx-auto px-6 py-10 max-w-5xl space-y-12">
         <section className="text-center">
           <Sparkles className="h-8 w-8 text-primary mx-auto mb-3" />
           <h1 className="text-4xl font-bold mb-3">Premium Skins</h1>
@@ -92,57 +99,137 @@ function SkinsPage() {
           )}
         </section>
 
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mono uppercase tracking-wider mb-4">Skins</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {SKINS.map((s) => {
-              const owned = s.free || subscribed || purchased.includes(s.id);
-              const isActive = active === s.id;
-              return (
-                <div
-                  key={s.id}
-                  className={`relative rounded-xl border p-5 transition ${
-                    isActive ? "border-primary shadow-glow" : "border-border"
-                  } bg-card`}
-                >
-                  <div className="flex gap-1.5 mb-4">
-                    {s.colors.map((c, i) => (
-                      <div key={i} className="h-10 flex-1 rounded" style={{ backgroundColor: c }} />
-                    ))}
-                  </div>
-                  <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-semibold">{s.name}</h3>
-                    {s.free ? (
-                      <span className="text-[10px] mono text-muted-foreground">FREE</span>
-                    ) : owned ? (
-                      <span className="text-[10px] mono text-primary">OWNED</span>
+        <Tabs defaultValue="editor" className="w-full">
+          <TabsList className="grid grid-cols-2 max-w-md mx-auto mb-8">
+            <TabsTrigger value="editor" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" /> Editor Skins
+            </TabsTrigger>
+            <TabsTrigger value="notebook" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" /> Notebook Skins
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="editor">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Editor Skins</h2>
+              <p className="text-sm text-muted-foreground">Theme the note editor and sidebar.</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {SKINS.map((s) => {
+                const owned = s.free || subscribed || purchased.includes(s.id);
+                const isActive = active === s.id;
+                return (
+                  <div
+                    key={s.id}
+                    className={`relative rounded-xl border p-5 transition ${
+                      isActive ? "border-primary shadow-glow" : "border-border"
+                    } bg-card`}
+                  >
+                    <div className="flex gap-1.5 mb-4">
+                      {s.colors.map((c, i) => (
+                        <div key={i} className="h-10 flex-1 rounded" style={{ backgroundColor: c }} />
+                      ))}
+                    </div>
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-semibold">{s.name}</h3>
+                      {s.free ? (
+                        <span className="text-[10px] mono text-muted-foreground">FREE</span>
+                      ) : owned ? (
+                        <span className="text-[10px] mono text-primary">OWNED</span>
+                      ) : (
+                        <span className="text-[10px] mono text-muted-foreground">$1.99</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">{s.desc}</p>
+                    {owned ? (
+                      <button
+                        disabled={isActive || setSkin.isPending}
+                        onClick={() => setSkin.mutate(s.id)}
+                        className="w-full rounded-md bg-secondary border border-border px-4 py-2 text-sm font-medium hover:bg-muted transition disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {isActive && <Check className="h-3.5 w-3.5 text-primary" />}
+                        {isActive ? "Active" : "Apply"}
+                      </button>
                     ) : (
-                      <span className="text-[10px] mono text-muted-foreground">$1.99</span>
+                      <button
+                        onClick={() => setCheckoutPrice({ priceId: s.priceId!, skinId: s.id })}
+                        className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition flex items-center justify-center gap-2"
+                      >
+                        <Lock className="h-3.5 w-3.5" /> Unlock $1.99
+                      </button>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">{s.desc}</p>
-                  {owned ? (
-                    <button
-                      disabled={isActive || setSkin.isPending}
-                      onClick={() => setSkin.mutate(s.id)}
-                      className="w-full rounded-md bg-secondary border border-border px-4 py-2 text-sm font-medium hover:bg-muted transition disabled:opacity-50 flex items-center justify-center gap-2"
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notebook">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Notebook Skins</h2>
+              <p className="text-sm text-muted-foreground">Style the notebook covers on your home page.</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {NOTEBOOK_SKINS.map((s) => {
+                const owned = s.free || subscribed || purchased.includes(s.id);
+                const isActive = activeNotebook === s.id;
+                return (
+                  <div
+                    key={s.id}
+                    className={`relative rounded-xl border p-5 transition ${
+                      isActive ? "border-primary shadow-glow" : "border-border"
+                    } bg-card`}
+                  >
+                    {/* Notebook cover preview */}
+                    <div
+                      className="aspect-[4/5] rounded-md mb-4 p-4 flex flex-col justify-between relative overflow-hidden"
+                      style={{
+                        background:
+                          s.cover ??
+                          "linear-gradient(135deg, hsl(244 70% 50%), hsl(20 85% 55%) 50%, hsl(150 60% 40%))",
+                      }}
                     >
-                      {isActive && <Check className="h-3.5 w-3.5 text-primary" />}
-                      {isActive ? "Active" : "Apply"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setCheckoutPrice({ priceId: s.priceId!, skinId: s.id })}
-                      className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition flex items-center justify-center gap-2"
-                    >
-                      <Lock className="h-3.5 w-3.5" /> Unlock $1.99
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-black/20" />
+                      <BookOpen className="h-5 w-5 text-white/90" />
+                      <div>
+                        <div className="text-[10px] mono text-white/70 mb-0.5">NOTEBOOK</div>
+                        <div className="text-sm font-semibold text-white">{s.name}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-semibold">{s.name}</h3>
+                      {s.free ? (
+                        <span className="text-[10px] mono text-muted-foreground">FREE</span>
+                      ) : owned ? (
+                        <span className="text-[10px] mono text-primary">OWNED</span>
+                      ) : (
+                        <span className="text-[10px] mono text-muted-foreground">$1.99</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">{s.desc}</p>
+                    {owned ? (
+                      <button
+                        disabled={isActive || setNotebookSkin.isPending}
+                        onClick={() => setNotebookSkin.mutate(s.id)}
+                        className="w-full rounded-md bg-secondary border border-border px-4 py-2 text-sm font-medium hover:bg-muted transition disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {isActive && <Check className="h-3.5 w-3.5 text-primary" />}
+                        {isActive ? "Active" : "Apply"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setCheckoutPrice({ priceId: s.priceId!, skinId: s.id })}
+                        className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition flex items-center justify-center gap-2"
+                      >
+                        <Lock className="h-3.5 w-3.5" /> Unlock $1.99
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <section>
           <h2 className="text-sm font-semibold text-muted-foreground mono uppercase tracking-wider mb-4">Typography</h2>
