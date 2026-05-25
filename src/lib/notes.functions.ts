@@ -148,7 +148,9 @@ export const updateProfile = createServerFn({ method: "POST" })
     z.object({
       display_name: z.string().min(1).max(80).optional(),
       avatar_url: z.string().url().max(500).optional().or(z.literal("")),
-      active_skin: z.enum(["midnight", "aurora", "sunset", "matrix"]).optional(),
+      active_skin: z.string().min(1).max(40).optional(),
+      heading_font: z.string().min(1).max(40).optional(),
+      body_font: z.string().min(1).max(40).optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
