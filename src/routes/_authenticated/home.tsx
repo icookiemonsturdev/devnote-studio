@@ -7,7 +7,7 @@ import {
   BookOpen, Plus, Settings, Sparkles, LogOut, FileCode2, Trash2,
 } from "lucide-react";
 import { getWorkspace, createDirectory, deleteDirectory } from "@/lib/notes.functions";
-import { getFontStack } from "@/lib/catalog";
+import { getFontStack, NOTEBOOK_SKINS } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/home")({
