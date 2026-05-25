@@ -40,11 +40,15 @@ function AppPage() {
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
 
-  // Apply skin from profile
+  // Apply skin + fonts from profile
   useEffect(() => {
     const skin = workspace.data?.profile?.active_skin ?? "midnight";
     document.documentElement.setAttribute("data-skin", skin);
-  }, [workspace.data?.profile?.active_skin]);
+    const h = getFontStack(workspace.data?.profile?.heading_font);
+    const b = getFontStack(workspace.data?.profile?.body_font);
+    document.documentElement.style.setProperty("--font-heading", h);
+    document.documentElement.style.setProperty("--font-body", b);
+  }, [workspace.data?.profile?.active_skin, workspace.data?.profile?.heading_font, workspace.data?.profile?.body_font]);
 
   const notesQuery = useQuery({
     queryKey: ["notes", activeFolder],
