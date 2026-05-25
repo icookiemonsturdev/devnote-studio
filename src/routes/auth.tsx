@@ -32,7 +32,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin + "/app",
+            emailRedirectTo: window.location.origin + "/home",
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
@@ -53,7 +53,7 @@ function AuthPage() {
   const handleGoogle = async () => {
     setBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/app",
+      redirect_uri: window.location.origin + "/home",
     });
     if (result.error) {
       toast.error("Google sign-in failed");
