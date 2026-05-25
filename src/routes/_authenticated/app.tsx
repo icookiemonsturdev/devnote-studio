@@ -340,7 +340,7 @@ function NoteEditor({
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [showFontPicker, setShowFontPicker] = useState(false);
-  const textareaRef = (typeof window !== "undefined" ? { current: null as HTMLTextAreaElement | null } : { current: null });
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const setFont = useMutation({
     mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
