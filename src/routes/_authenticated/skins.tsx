@@ -34,7 +34,11 @@ function SkinsPage() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-skin", active);
-  }, [active]);
+    const h = FONTS.find((f) => f.id === headingFont)?.stack;
+    const b = FONTS.find((f) => f.id === bodyFont)?.stack;
+    if (h) document.documentElement.style.setProperty("--font-heading", h);
+    if (b) document.documentElement.style.setProperty("--font-body", b);
+  }, [active, headingFont, bodyFont]);
 
   useEffect(() => {
     if (checkout === "success") {
