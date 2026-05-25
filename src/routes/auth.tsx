@@ -20,7 +20,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) navigate({ to: "/app" });
+    if (user) navigate({ to: "/home" });
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
