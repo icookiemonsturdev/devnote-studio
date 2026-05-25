@@ -118,6 +118,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_notebook_skin: string
           active_skin: string
           avatar_url: string | null
           body_font: string
@@ -128,6 +129,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_notebook_skin?: string
           active_skin?: string
           avatar_url?: string | null
           body_font?: string
@@ -138,6 +140,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_notebook_skin?: string
           active_skin?: string
           avatar_url?: string | null
           body_font?: string
