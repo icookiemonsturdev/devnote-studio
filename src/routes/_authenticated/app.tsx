@@ -310,6 +310,8 @@ function AppPage() {
             <NoteEditor
               key={n.id}
               note={n}
+              headingFont={ws?.profile?.heading_font ?? "inter"}
+              bodyFont={ws?.profile?.body_font ?? "inter"}
               onSave={(patch) => saveNote.mutate({ id: n.id, ...patch })}
               onDelete={() => confirm("Delete this note?") && removeNote.mutate(n.id)}
             />
@@ -322,15 +324,29 @@ function AppPage() {
 
 function NoteEditor({
   note,
+  headingFont,
+  bodyFont,
   onSave,
   onDelete,
 }: {
   note: { id: string; title: string; content: string };
+  headingFont: string;
+  bodyFont: string;
   onSave: (patch: { title?: string; content?: string }) => void;
   onDelete: () => void;
 }) {
+  const qc = useQueryClient();
+  const profileFn = useServerFn(updateProfile);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  const [showFontPicker, setShowFontPicker] = useState(false);
+  const textareaRef = (typeof window !== "undefined" ? { current: null as HTMLTextAreaElement | null } : { current: null });
+
+  const setFont = useMutation({
+    mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Font updated"); },
+    onError: (e) => toast.error((e as Error).message),
+  });
 
   // Debounced autosave
   useEffect(() => {
@@ -343,13 +359,60 @@ function NoteEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, content]);
 
+  function wrap(before: string, after: string = before) {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = content.slice(start, end);
+    const next = content.slice(0, start) + before + selected + after + content.slice(end);
+    setContent(next);
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start + before.length, end + before.length);
+    });
+  }
+
+  function linePrefix(prefix: string) {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const lineStart = content.lastIndexOf("\n", start - 1) + 1;
+    const next = content.slice(0, lineStart) + prefix + content.slice(lineStart);
+    setContent(next);
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start + prefix.length, start + prefix.length);
+    });
+  }
+
+  const tools: Array<{ icon: any; label: string; action: () => void }> = [
+    { icon: Heading1, label: "Heading 1", action: () => linePrefix("# ") },
+    { icon: Heading2, label: "Heading 2", action: () => linePrefix("## ") },
+    { icon: Bold, label: "Bold", action: () => wrap("**") },
+    { icon: Italic, label: "Italic", action: () => wrap("*") },
+    { icon: Code, label: "Code", action: () => wrap("`") },
+    { icon: Quote, label: "Quote", action: () => linePrefix("> ") },
+    { icon: List, label: "Bulleted list", action: () => linePrefix("- ") },
+    { icon: ListOrdered, label: "Numbered list", action: () => linePrefix("1. ") },
+    {
+      icon: LinkIcon,
+      label: "Link",
+      action: () => {
+        const url = prompt("URL");
+        if (url) wrap("[", `](${url})`);
+      },
+    },
+  ];
+
   return (
     <>
-      <div className="px-8 py-4 border-b border-border flex items-center justify-between">
+      <div className="px-8 py-4 border-b border-border flex items-center justify-between gap-4">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="flex-1 bg-transparent text-xl font-semibold focus:outline-none"
+          style={{ fontFamily: "var(--font-heading)" }}
           maxLength={200}
           placeholder="Untitled"
         />
@@ -361,13 +424,83 @@ function NoteEditor({
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
+
+      {/* Toolbar */}
+      <div className="px-8 py-2 border-b border-border flex items-center gap-1 flex-wrap relative">
+        {tools.map((t) => (
+          <button
+            key={t.label}
+            onClick={t.action}
+            title={t.label}
+            className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
+          >
+            <t.icon className="h-4 w-4" />
+          </button>
+        ))}
+        <div className="w-px h-5 bg-border mx-1" />
+        <button
+          onClick={() => setShowFontPicker((v) => !v)}
+          title="Font settings"
+          className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono"
+        >
+          <Type className="h-4 w-4" /> Fonts
+        </button>
+
+        {showFontPicker && (
+          <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3">
+            <FontSelect
+              label="Heading font"
+              value={headingFont}
+              onChange={(id) => setFont.mutate({ heading_font: id })}
+            />
+            <FontSelect
+              label="Body font"
+              value={bodyFont}
+              onChange={(id) => setFont.mutate({ body_font: id })}
+            />
+            <p className="text-[10px] mono text-muted-foreground">
+              Applied to your entire workspace. Free for everyone.
+            </p>
+          </div>
+        )}
+      </div>
+
       <textarea
+        ref={(el) => { textareaRef.current = el; }}
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Start writing..."
-        className="flex-1 bg-transparent px-8 py-6 mono text-sm leading-relaxed focus:outline-none resize-none"
+        placeholder="Start writing... Use the toolbar above for **bold**, *italic*, # headings, lists, and more."
+        className="flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none resize-none"
+        style={{ fontFamily: "var(--font-body)" }}
         maxLength={100000}
       />
     </>
+  );
+}
+
+function FontSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <div>
+      <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-1.5">{label}</div>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+      >
+        {FONTS.map((f) => (
+          <option key={f.id} value={f.id} style={{ fontFamily: f.stack }}>
+            {f.name} ({f.category})
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
