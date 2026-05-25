@@ -6,17 +6,34 @@ export const getWorkspace = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase } = context;
-    const [dirs, folders, profile, sub] = await Promise.all([
+    const [dirs, folders, profile, subs, purchases] = await Promise.all([
       supabase.from("directories").select("*").order("created_at"),
       supabase.from("folders").select("*").order("created_at"),
       supabase.from("profiles").select("*").maybeSingle(),
-      supabase.from("subscribers").select("*").maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("skin_purchases").select("skin_id"),
     ]);
+
+    const sub = subs.data as any;
+    const isActive =
+      !!sub &&
+      ((["active", "trialing", "past_due"].includes(sub.status) &&
+        (!sub.current_period_end || new Date(sub.current_period_end) > new Date())) ||
+        (sub.status === "canceled" &&
+          sub.current_period_end &&
+          new Date(sub.current_period_end) > new Date()));
+
     return {
       directories: dirs.data ?? [],
       folders: folders.data ?? [],
       profile: profile.data,
-      subscriber: sub.data,
+      subscriptionActive: isActive,
+      purchasedSkins: (purchases.data ?? []).map((p: any) => p.skin_id as string),
     };
   });
 
@@ -131,7 +148,9 @@ export const updateProfile = createServerFn({ method: "POST" })
     z.object({
       display_name: z.string().min(1).max(80).optional(),
       avatar_url: z.string().url().max(500).optional().or(z.literal("")),
-      active_skin: z.enum(["midnight", "aurora", "sunset", "matrix"]).optional(),
+      active_skin: z.string().min(1).max(40).optional(),
+      heading_font: z.string().min(1).max(40).optional(),
+      body_font: z.string().min(1).max(40).optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {

@@ -109,7 +109,7 @@ function AppPage() {
   const ws = workspace.data;
   const folders = ws?.folders ?? [];
   const dirs = ws?.directories ?? [];
-  const isSubscribed = ws?.subscriber?.subscribed ?? false;
+  const isSubscribed = ws?.subscriptionActive ?? false;
 
   return (
     <div className="min-h-screen flex" style={{ background: "var(--gradient-surface)" }}>
