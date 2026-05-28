@@ -253,24 +253,73 @@ function SkinsPage() {
         </section>
       </main>
 
-      {checkoutPrice && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="relative bg-card border border-border rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setCheckoutPrice(null)}
-              className="absolute top-3 right-3 p-1.5 rounded hover:bg-muted text-muted-foreground z-10"
+      {checkoutPrice && (() => {
+        const editorSkin = SKINS.find((s) => s.id === checkoutPrice.skinId);
+        const notebookSkin = NOTEBOOK_SKINS.find((s) => s.id === checkoutPrice.skinId);
+        const isSubscription = checkoutPrice.priceId === ALL_SKINS_PRICE_ID;
+        const itemName = isSubscription
+          ? "PRO — All Skins"
+          : editorSkin?.name ?? notebookSkin?.name ?? "Premium Skin";
+        const itemDesc = isSubscription
+          ? "Unlock every editor & notebook skin, plus all future releases."
+          : editorSkin?.desc ?? notebookSkin?.desc ?? "";
+        const price = isSubscription ? "$5.99/mo" : "$1.99";
+        // Header gradient that matches the active skin
+        const activeSkin = SKINS.find((s) => s.id === active);
+        const headerBg = notebookSkin?.cover
+          ?? (editorSkin ? `linear-gradient(135deg, ${editorSkin.colors.join(", ")})` : null)
+          ?? (activeSkin ? `linear-gradient(135deg, ${activeSkin.colors.join(", ")})` : "var(--gradient-primary, linear-gradient(135deg, hsl(244 70% 50%), hsl(280 70% 55%)))");
+
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-background/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+            onClick={() => setCheckoutPrice(null)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-card border border-border rounded-2xl w-full max-w-md max-h-[92vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
             >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="p-2">
-              <StripeEmbeddedCheckout
-                priceId={checkoutPrice.priceId}
-                skinId={checkoutPrice.skinId}
-              />
+              {/* Header with themed gradient */}
+              <div className="relative p-6 pb-5" style={{ background: headerBg }}>
+                <div className="absolute inset-0 bg-black/20" />
+                <button
+                  onClick={() => setCheckoutPrice(null)}
+                  className="absolute top-3 right-3 p-1.5 rounded-full bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm transition z-10"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] mono uppercase tracking-widest text-white/80 bg-white/15 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20">
+                      {isSubscription ? "Subscription" : notebookSkin ? "Notebook Skin" : "Editor Skin"}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-1 drop-shadow-sm">{itemName}</h2>
+                  <p className="text-sm text-white/85 drop-shadow-sm">{itemDesc}</p>
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-white drop-shadow-sm">{price}</span>
+                    {!isSubscription && <span className="text-xs text-white/70 mono">one-time</span>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust row */}
+              <div className="px-6 py-3 border-b border-border bg-muted/30 flex items-center justify-between text-[11px] mono text-muted-foreground">
+                <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> Secure checkout</span>
+                <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-primary" /> Instant unlock</span>
+              </div>
+
+              {/* Stripe form */}
+              <div className="flex-1 overflow-y-auto p-2">
+                <StripeEmbeddedCheckout
+                  priceId={checkoutPrice.priceId}
+                  skinId={checkoutPrice.skinId}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
