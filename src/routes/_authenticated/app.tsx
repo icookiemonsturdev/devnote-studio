@@ -535,3 +535,72 @@ function FontSelect({
     </div>
   );
 }
+
+const PRESET_COLORS = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#a855f7"];
+
+function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [custom, setCustom] = useState("#ec4899");
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title="Text color"
+        className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5"
+      >
+        <Palette className="h-4 w-4" />
+        <span className="h-2 w-4 rounded-sm" style={{ background: custom }} />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 z-30 w-56 rounded-lg border border-border bg-popover shadow-lg p-3">
+          <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">Text color</div>
+          <div className="flex items-center gap-2 mb-3">
+            {PRESET_COLORS.map((c) => (
+              <button
+                key={c}
+                onClick={() => { onPick(c); setOpen(false); }}
+                className="h-7 w-7 rounded-full border-2 border-border hover:scale-110 transition"
+                style={{ background: c }}
+                title={c}
+              />
+            ))}
+          </div>
+          <div className="border-t border-border pt-3">
+            <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">Custom</div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={custom}
+                onChange={(e) => setCustom(e.target.value)}
+                className="h-9 w-12 rounded cursor-pointer border border-border bg-transparent"
+              />
+              <input
+                type="text"
+                value={custom}
+                onChange={(e) => setCustom(e.target.value)}
+                className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-xs mono focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              <button
+                onClick={() => { onPick(custom); setOpen(false); }}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
