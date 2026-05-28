@@ -460,6 +460,22 @@ function NoteEditor({
         >
           <Type className="h-4 w-4" /> Fonts
         </button>
+        <ColorPicker
+          onPick={(color) => {
+            const ta = textareaRef.current;
+            if (!ta) return;
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            const sel = content.slice(start, end) || "text";
+            const wrap = `<span style="color:${color}">${sel}</span>`;
+            const next = content.slice(0, start) + wrap + content.slice(end);
+            setContent(next);
+            requestAnimationFrame(() => {
+              ta.focus();
+              ta.setSelectionRange(start + wrap.length, start + wrap.length);
+            });
+          }}
+        />
 
         {showFontPicker && (
           <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3">
