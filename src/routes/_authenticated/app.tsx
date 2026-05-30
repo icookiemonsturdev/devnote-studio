@@ -494,7 +494,12 @@ function NoteEditor({
     restoreSelection();
     document.execCommand(command, false, value);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
+    // Save the new selection so subsequent toolbar clicks work, and refresh
+    // active formats multiple times to catch async DOM updates.
+    saveSelection();
+    refreshActiveFormats();
     requestAnimationFrame(refreshActiveFormats);
+    setTimeout(refreshActiveFormats, 30);
   }
 
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
