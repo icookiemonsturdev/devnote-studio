@@ -133,7 +133,8 @@ function HomePage() {
             return (
               <div
                 key={d.id}
-                className="group relative rounded-xl overflow-hidden border border-border bg-card hover:border-primary/50 hover:shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-1"
+                style={{ animationDelay: `${i * 60}ms` }}
+                className="notebook-card group relative rounded-xl overflow-hidden border border-border bg-card hover:border-primary/50 hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1.5 animate-fade-in"
               >
                 <button
                   onClick={() => navigate({ to: "/app", search: { dir: d.id } })}
