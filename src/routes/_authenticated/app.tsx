@@ -205,7 +205,10 @@ function AppPage() {
                   <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="text-sm truncate flex-1">{f.name}</span>
                   <button
-                    onClick={(e) => { e.stopPropagation(); confirm(`Delete folder "${f.name}"?`) && removeFolder.mutate(f.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Delete folder "${f.name}"?`)) removeFolder.mutate(f.id);
+                    }}
                     className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
                   >
                     <Trash2 className="h-3 w-3" />
@@ -225,7 +228,8 @@ function AppPage() {
                     onClick={() =>
                       setExpandedDirs((s) => {
                         const n = new Set(s);
-                        n.has(d.id) ? n.delete(d.id) : n.add(d.id);
+                        if (n.has(d.id)) n.delete(d.id);
+                        else n.add(d.id);
                         return n;
                       })
                     }
@@ -267,7 +271,10 @@ function AppPage() {
                         <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="text-sm truncate flex-1">{f.name}</span>
                         <button
-                          onClick={(e) => { e.stopPropagation(); confirm(`Delete folder "${f.name}"?`) && removeFolder.mutate(f.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Delete folder "${f.name}"?`)) removeFolder.mutate(f.id);
+                          }}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
                         >
                           <Trash2 className="h-3 w-3" />
