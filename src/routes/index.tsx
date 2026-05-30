@@ -42,13 +42,11 @@ function Landing() {
           built for developers
         </div>
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-          Notes,{" "}
-          <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>
-            organized like code.
-          </span>
+          Clean and professional
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto">
-          Directories, folders, notes. Keep your snippets, ideas, and docs in a structure that finally makes sense.
+          Organize your notes the way you organize your projects.
+          Create folders, nest directories, and keep everything from quick thoughts to detailed documentation easy to find.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
@@ -70,7 +68,7 @@ function Landing() {
         {[
           { icon: FolderTree, title: "Hierarchical workspace", body: "Group folders into directories. Your second brain, file-system style." },
           { icon: FileCode2, title: "Markdown editor", body: "Plain text, monospace-friendly, autosaved as you type." },
-          { icon: Sparkles, title: "Premium skins", body: "Subscribe monthly to unlock Aurora, Sunset, and Matrix themes." },
+          { icon: Sparkles, title: "Premium themes", body: "Subscribe monthly to unlock Aurora, Sunset, and Matrix themes." },
         ].map(({ icon: Icon, title, body }) => (
           <div key={title} className="rounded-xl border border-border bg-card p-6">
             <Icon className="h-6 w-6 text-primary mb-4" />

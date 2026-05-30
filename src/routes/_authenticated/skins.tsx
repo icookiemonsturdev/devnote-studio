@@ -77,7 +77,7 @@ function SkinsPage() {
         </Link>
         {subscribed && (
           <span className="rounded-full bg-primary/15 text-primary mono text-xs px-3 py-1 border border-primary/30 flex items-center gap-1.5">
-            <Crown className="h-3 w-3" /> PRO — all skins unlocked
+            <Crown className="h-3 w-3" /> PRO — all themes unlocked
           </span>
         )}
       </header>
@@ -85,9 +85,9 @@ function SkinsPage() {
       <main className="container mx-auto px-6 py-10 max-w-5xl space-y-12">
         <section className="text-center">
           <Sparkles className="h-8 w-8 text-primary mx-auto mb-3" />
-          <h1 className="text-4xl font-bold mb-3">Premium Skins</h1>
+          <h1 className="text-4xl font-bold mb-3">Premium Themes</h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Buy individual skins for $1.99 each, or subscribe for $5.99/month and unlock every skin — including future releases.
+            Buy individual themes for $1.99 each, or subscribe for $5.99/month and unlock every theme — including future releases.
           </p>
           {!subscribed && (
             <button
@@ -102,16 +102,16 @@ function SkinsPage() {
         <Tabs defaultValue="editor" className="w-full">
           <TabsList className="grid grid-cols-2 max-w-md mx-auto mb-8">
             <TabsTrigger value="editor" className="flex items-center gap-2">
-              <Palette className="h-4 w-4" /> Editor Skins
+              <Palette className="h-4 w-4" /> Editor Themes
             </TabsTrigger>
             <TabsTrigger value="notebook" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" /> Notebook Skins
+              <BookOpen className="h-4 w-4" /> Notebook Themes
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="editor">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold">Editor Skins</h2>
+              <h2 className="text-lg font-semibold">Editor Themes</h2>
               <p className="text-sm text-muted-foreground">Theme the note editor and sidebar.</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -166,7 +166,7 @@ function SkinsPage() {
 
           <TabsContent value="notebook">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold">Notebook Skins</h2>
+              <h2 className="text-lg font-semibold">Notebook Themes</h2>
               <p className="text-sm text-muted-foreground">Style the notebook covers on your home page.</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -257,9 +257,9 @@ function SkinsPage() {
         const editorSkin = SKINS.find((s) => s.id === checkoutPrice.skinId);
         const notebookSkin = NOTEBOOK_SKINS.find((s) => s.id === checkoutPrice.skinId);
         const isSubscription = checkoutPrice.priceId === ALL_SKINS_PRICE_ID;
-        const itemName = isSubscription
-          ? "PRO — All Skins"
-          : editorSkin?.name ?? notebookSkin?.name ?? "Premium Skin";
+          const itemName = isSubscription
+            ? "PRO — All Themes"
+            : editorSkin?.name ?? notebookSkin?.name ?? "Premium Theme";
         const itemDesc = isSubscription
           ? "Unlock every editor & notebook skin, plus all future releases."
           : editorSkin?.desc ?? notebookSkin?.desc ?? "";

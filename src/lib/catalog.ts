@@ -21,7 +21,7 @@ export interface Skin {
 
 export const SKINS: Skin[] = [
   { id: "midnight", name: "Midnight Indigo", desc: "Deep indigo, default.", free: true, colors: ["#0a0a1a", "#1e1e5a", "#4f46e5"] },
-  { id: "aurora", name: "Aurora", desc: "Teal + magenta dream.", free: false, priceId: "skin_aurora_199", colors: ["#0b1a1f", "#2dd4a8", "#e94560"] },
+  { id: "aurora", name: "Aurora", desc: "Teal + magenta dream.", free: true, colors: ["#0b1a1f", "#2dd4a8", "#e94560"] },
   { id: "sunset", name: "Sunset Blaze", desc: "Warm orange to magenta.", free: false, priceId: "skin_sunset_199", colors: ["#1a0d08", "#ff6b35", "#e84393"] },
   { id: "matrix", name: "Matrix", desc: "Hacker green on black.", free: false, priceId: "skin_matrix_199", colors: ["#08120a", "#22c55e", "#16a34a"] },
   { id: "noir", name: "Noir Gold", desc: "Black with gold accents.", free: false, priceId: "skin_noir_199", colors: ["#0d0d0d", "#1a1a1a", "#c9a84c"] },
@@ -59,8 +59,7 @@ export const NOTEBOOK_SKINS: NotebookSkin[] = [
     id: "nb_galaxy",
     name: "Galaxy",
     desc: "Deep purple to electric blue.",
-    free: false,
-    priceId: "nb_galaxy_199",
+    free: true,
     cover: "linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #7c3aed 100%)",
     swatch: ["#1e1b4b", "#4338ca", "#7c3aed"],
   },
