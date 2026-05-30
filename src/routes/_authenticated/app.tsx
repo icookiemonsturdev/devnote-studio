@@ -50,15 +50,11 @@ function AppPage() {
     if (firstFolder) setActiveFolder((cur) => cur ?? firstFolder.id);
   }, [dirParam, workspace.data]);
 
-  // Apply skin + fonts from profile
+  // Apply only the editor skin globally; fonts are scoped to the editor itself.
   useEffect(() => {
     const skin = workspace.data?.profile?.active_skin ?? "midnight";
     document.documentElement.setAttribute("data-skin", skin);
-    const h = getFontStack(workspace.data?.profile?.heading_font);
-    const b = getFontStack(workspace.data?.profile?.body_font);
-    document.documentElement.style.setProperty("--font-heading", h);
-    document.documentElement.style.setProperty("--font-body", b);
-  }, [workspace.data?.profile?.active_skin, workspace.data?.profile?.heading_font, workspace.data?.profile?.body_font]);
+  }, [workspace.data?.profile?.active_skin]);
 
   const notesQuery = useQuery({
     queryKey: ["notes", activeFolder],
