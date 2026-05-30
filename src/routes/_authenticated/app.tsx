@@ -570,7 +570,19 @@ function NoteEditor({
       </div>
 
       {/* Toolbar */}
-      <div className="px-8 py-2 border-b border-border flex items-center gap-1 flex-wrap relative">
+      <div className="px-8 py-2 border-b border-border flex items-center gap-1 flex-wrap relative animate-fade-in">
+        <select
+          value={currentBlock.startsWith("h") || currentBlock === "p" ? currentBlock : "p"}
+          onMouseDown={(e) => { saveSelection(); }}
+          onChange={(e) => exec("formatBlock", e.target.value === "p" ? "P" : e.target.value.toUpperCase())}
+          className="h-8 rounded-md border border-border bg-background px-2 text-xs mono focus:outline-none focus:ring-1 focus:ring-ring hover:border-primary/60 transition cursor-pointer"
+          title="Block type"
+        >
+          {BLOCK_OPTIONS.map((b) => (
+            <option key={b.value} value={b.value}>{b.label}</option>
+          ))}
+        </select>
+        <div className="w-px h-5 bg-border mx-1" />
         {tools.map((t) => {
           const isActive = t.activeKey ? !!activeFormats[t.activeKey] : false;
           return (
@@ -580,10 +592,10 @@ function NoteEditor({
               onClick={t.action}
               title={t.label}
               aria-pressed={isActive}
-              className={`p-2 rounded transition ${
+              className={`p-2 rounded transition-all duration-150 active:scale-90 ${
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
-                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30 scale-105"
+                  : "hover:bg-muted text-muted-foreground hover:text-foreground hover:scale-105"
               }`}
             >
               <t.icon className="h-4 w-4" />
@@ -591,18 +603,19 @@ function NoteEditor({
           );
         })}
         <div className="w-px h-5 bg-border mx-1" />
+        <ColorPicker currentColor={currentColor} onPick={(color) => exec("foreColor", color)} />
+        <div className="w-px h-5 bg-border mx-1" />
         <button
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => setShowFontPicker((v) => !v)}
           title="Editor font settings"
-          className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono"
+          className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono hover:scale-105"
         >
           <Type className="h-4 w-4" /> Fonts
         </button>
-        <ColorPicker onPick={(color) => exec("foreColor", color)} />
-
 
         {showFontPicker && (
-          <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3">
+          <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3 animate-scale-in">
             <FontSelect
               label="Heading font"
               value={headingFont}
