@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import {
 import { getWorkspace, createDirectory, deleteDirectory, updateDirectory } from "@/lib/notes.functions";
 import { NOTEBOOK_SKINS } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: HomePage,
