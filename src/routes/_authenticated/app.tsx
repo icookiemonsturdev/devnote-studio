@@ -120,7 +120,9 @@ function AppPage() {
 
   const ws = workspace.data;
   const folders = ws?.folders ?? [];
-  const dirs = ws?.directories ?? [];
+  const allDirs = ws?.directories ?? [];
+  // When opened from a notebook (?dir=...), scope sidebar to JUST that notebook.
+  const dirs = dirParam ? allDirs.filter((d) => d.id === dirParam) : allDirs;
   const isSubscribed = ws?.subscriptionActive ?? false;
 
   return (
