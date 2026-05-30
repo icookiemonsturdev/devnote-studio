@@ -215,8 +215,7 @@ function AppPage() {
             </div>
           )}
 
-          {!dirParam &&
-          {dirs.map((d) => {
+          {!dirParam && dirs.map((d) => {
             const open = expandedDirs.has(d.id);
             const dirFolders = folders.filter((f) => f.directory_id === d.id);
             return (
@@ -279,7 +278,7 @@ function AppPage() {
                 )}
               </div>
             );
-          })}}
+          })}
         </div>
 
         <div className="border-t border-sidebar-border p-2 flex items-center justify-between">
