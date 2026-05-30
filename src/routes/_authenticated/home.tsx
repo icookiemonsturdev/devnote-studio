@@ -223,7 +223,7 @@ function CoverPicker({
         </button>
       </DialogTrigger>
       <DialogContent
-        className="w-[min(92vw,42rem)] max-w-2xl p-5"
+        className="w-[min(94vw,48rem)] sm:max-w-2xl p-6 animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <DialogHeader className="pr-8">
@@ -243,7 +243,7 @@ function CoverPicker({
             Get more
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 max-h-[60vh] overflow-y-auto pr-1 py-1">
           {NOTEBOOK_SKINS.map((s) => {
             const owned = ownedSkinIds.has(s.id);
             const isActive = currentSkin === s.id;
@@ -259,20 +259,23 @@ function CoverPicker({
                   onPick(s.id);
                   setOpen(false);
                 }}
-                className={`relative aspect-[4/5] rounded-md overflow-hidden border-2 transition ${
-                  isActive ? "border-primary" : "border-transparent hover:border-border"
-                } ${!owned ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
+                className={`relative aspect-[4/5] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                  isActive ? "border-primary shadow-glow" : "border-transparent hover:border-border"
+                } ${!owned ? "opacity-50 cursor-not-allowed" : "hover:scale-[1.04] hover:-translate-y-0.5"}`}
                 style={{ background: bg }}
                 title={s.name + (owned ? "" : " (locked)")}
               >
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                  <div className="text-[10px] mono text-white/90 truncate">{s.name}</div>
+                </div>
                 {isActive && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <Check className="h-4 w-4 text-white" />
+                  <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full p-0.5 shadow">
+                    <Check className="h-3 w-3" />
                   </div>
                 )}
                 {!owned && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                    <Lock className="h-3.5 w-3.5 text-white" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[1px]">
+                    <Lock className="h-4 w-4 text-white" />
                   </div>
                 )}
               </button>
