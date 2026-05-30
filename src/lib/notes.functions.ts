@@ -63,11 +63,20 @@ export const getNote = createServerFn({ method: "POST" })
 
 export const createDirectory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ name: z.string().min(1).max(80) }).parse(d))
+  .inputValidator((d) =>
+    z.object({
+      name: z.string().min(1).max(80),
+      coverSkin: z.string().min(1).max(40).optional(),
+    }).parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { data: dir, error } = await context.supabase
       .from("directories")
-      .insert({ name: data.name, user_id: context.userId, cover_skin: "nb_default" })
+      .insert({
+        name: data.name,
+        user_id: context.userId,
+        cover_skin: data.coverSkin ?? "nb_default",
+      })
       .select()
       .single();
     if (error) throw new Error(error.message);
