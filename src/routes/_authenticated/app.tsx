@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Heading1, Heading2, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
+  Bold, Italic, Underline, Heading1, Heading2, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
@@ -46,8 +46,11 @@ function AppPage() {
   useEffect(() => {
     if (!dirParam || !workspace.data) return;
     setExpandedDirs((s) => new Set([...s, dirParam]));
-    const firstFolder = workspace.data.folders.find((f) => f.directory_id === dirParam);
-    if (firstFolder) setActiveFolder((cur) => cur ?? firstFolder.id);
+    const folderIds = workspace.data.folders
+      .filter((f) => f.directory_id === dirParam)
+      .map((f) => f.id);
+    setActiveFolder((cur) => (cur && folderIds.includes(cur) ? cur : (folderIds[0] ?? null)));
+    setActiveNoteId(null);
   }, [dirParam, workspace.data]);
 
   // Apply only the editor skin globally; fonts are scoped to the editor itself.
@@ -123,6 +126,8 @@ function AppPage() {
   const allDirs = ws?.directories ?? [];
   // When opened from a notebook (?dir=...), scope sidebar to JUST that notebook.
   const dirs = dirParam ? allDirs.filter((d) => d.id === dirParam) : allDirs;
+  const currentDir = dirParam ? dirs[0] : null;
+  const currentDirFolders = dirParam ? folders.filter((f) => f.directory_id === dirParam) : [];
   const isSubscribed = ws?.subscriptionActive ?? false;
 
   return (
