@@ -472,17 +472,25 @@ function NoteEditor({
 
       {/* Toolbar */}
       <div className="px-8 py-2 border-b border-border flex items-center gap-1 flex-wrap relative">
-        {tools.map((t) => (
-          <button
-            key={t.label}
-            onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
-            onClick={t.action}
-            title={t.label}
-            className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
-          >
-            <t.icon className="h-4 w-4" />
-          </button>
-        ))}
+        {tools.map((t) => {
+          const isActive = t.activeKey ? !!activeFormats[t.activeKey] : false;
+          return (
+            <button
+              key={t.label}
+              onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
+              onClick={t.action}
+              title={t.label}
+              aria-pressed={isActive}
+              className={`p-2 rounded transition ${
+                isActive
+                  ? "bg-primary/20 text-primary"
+                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <t.icon className="h-4 w-4" />
+            </button>
+          );
+        })}
         <div className="w-px h-5 bg-border mx-1" />
         <button
           onClick={() => setShowFontPicker((v) => !v)}
