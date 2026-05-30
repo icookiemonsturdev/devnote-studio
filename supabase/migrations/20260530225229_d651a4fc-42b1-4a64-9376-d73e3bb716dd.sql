@@ -1,0 +1,1 @@
+ALTER TABLE public.directories ADD COLUMN cover_skin text NOT NULL DEFAULT 'nb_default';

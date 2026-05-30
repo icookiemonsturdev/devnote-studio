@@ -1,18 +1,29 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  BookOpen, Plus, Settings, Sparkles, LogOut, FileCode2, Trash2,
+  BookOpen, Plus, Settings, Sparkles, LogOut, FileCode2, Trash2, Palette, Check, Lock,
 } from "lucide-react";
-import { getWorkspace, createDirectory, deleteDirectory } from "@/lib/notes.functions";
-import { getFontStack, NOTEBOOK_SKINS } from "@/lib/catalog";
+import { getWorkspace, createDirectory, deleteDirectory, updateDirectory } from "@/lib/notes.functions";
+import { NOTEBOOK_SKINS } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: HomePage,
 });
+
+const DEFAULT_COVERS = [
+  "linear-gradient(135deg, hsl(244 70% 50%), hsl(280 70% 55%))",
+  "linear-gradient(135deg, hsl(200 80% 45%), hsl(180 70% 50%))",
+  "linear-gradient(135deg, hsl(20 85% 55%), hsl(340 75% 55%))",
+  "linear-gradient(135deg, hsl(150 60% 40%), hsl(180 65% 45%))",
+  "linear-gradient(135deg, hsl(45 90% 55%), hsl(20 85% 55%))",
+  "linear-gradient(135deg, hsl(280 65% 55%), hsl(320 70% 55%))",
+  "linear-gradient(135deg, hsl(220 70% 45%), hsl(260 65% 55%))",
+  "linear-gradient(135deg, hsl(160 60% 40%), hsl(220 70% 50%))",
+];
 
 function HomePage() {
   const qc = useQueryClient();
@@ -20,15 +31,14 @@ function HomePage() {
   const wsFn = useServerFn(getWorkspace);
   const newDirFn = useServerFn(createDirectory);
   const delDirFn = useServerFn(deleteDirectory);
+  const updateDirFn = useServerFn(updateDirectory);
 
   const workspace = useQuery({ queryKey: ["workspace"], queryFn: () => wsFn() });
 
   useEffect(() => {
     const skin = workspace.data?.profile?.active_skin ?? "midnight";
     document.documentElement.setAttribute("data-skin", skin);
-    document.documentElement.style.setProperty("--font-heading", getFontStack(workspace.data?.profile?.heading_font));
-    document.documentElement.style.setProperty("--font-body", getFontStack(workspace.data?.profile?.body_font));
-  }, [workspace.data?.profile?.active_skin, workspace.data?.profile?.heading_font, workspace.data?.profile?.body_font]);
+  }, [workspace.data?.profile?.active_skin]);
 
   const addDir = useMutation({
     mutationFn: async () => {
@@ -51,31 +61,33 @@ function HomePage() {
     onError: (e) => toast.error((e as Error).message),
   });
 
+  const setCover = useMutation({
+    mutationFn: (vars: { id: string; cover_skin: string }) =>
+      updateDirFn({ data: vars }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["workspace"] }),
+    onError: (e) => toast.error((e as Error).message),
+  });
+
   const ws = workspace.data;
   const dirs = ws?.directories ?? [];
   const folders = ws?.folders ?? [];
   const isSubscribed = ws?.subscriptionActive ?? false;
+  const purchased = ws?.purchasedSkins ?? [];
 
-  const activeNotebookSkinId: string = ws?.profile?.active_notebook_skin ?? "nb_default";
-  const activeNotebookSkin = NOTEBOOK_SKINS.find((s) => s.id === activeNotebookSkinId) ?? NOTEBOOK_SKINS[0];
+  const ownedSkinIds = new Set<string>(
+    NOTEBOOK_SKINS.filter((s) => s.free || isSubscribed || purchased.includes(s.id)).map((s) => s.id),
+  );
 
-  // Default rotating covers (used when the chosen notebook skin has no fixed cover).
-  const defaultCovers = [
-    "linear-gradient(135deg, hsl(244 70% 50%), hsl(280 70% 55%))",
-    "linear-gradient(135deg, hsl(200 80% 45%), hsl(180 70% 50%))",
-    "linear-gradient(135deg, hsl(20 85% 55%), hsl(340 75% 55%))",
-    "linear-gradient(135deg, hsl(150 60% 40%), hsl(180 65% 45%))",
-    "linear-gradient(135deg, hsl(45 90% 55%), hsl(20 85% 55%))",
-    "linear-gradient(135deg, hsl(280 65% 55%), hsl(320 70% 55%))",
-    "linear-gradient(135deg, hsl(220 70% 45%), hsl(260 65% 55%))",
-    "linear-gradient(135deg, hsl(160 60% 40%), hsl(220 70% 50%))",
-  ];
-  const coverFor = (i: number) => activeNotebookSkin.cover ?? defaultCovers[i % defaultCovers.length];
-
+  const coverFor = (dir: { cover_skin?: string | null }, i: number) => {
+    const skinId = dir.cover_skin ?? "nb_default";
+    // Only honor the chosen skin if user actually owns it; otherwise fall back.
+    if (!ownedSkinIds.has(skinId)) return DEFAULT_COVERS[i % DEFAULT_COVERS.length];
+    const skin = NOTEBOOK_SKINS.find((s) => s.id === skinId);
+    return skin?.cover ?? DEFAULT_COVERS[i % DEFAULT_COVERS.length];
+  };
 
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-surface)" }}>
-      {/* Top bar */}
       <header className="border-b border-border bg-card/40 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -104,10 +116,8 @@ function HomePage() {
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-10">
-          <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-            Your notebooks
-          </h1>
-          <p className="text-sm text-muted-foreground" style={{ fontFamily: "var(--font-body)" }}>
+          <h1 className="text-4xl font-bold mb-2">Your notebooks</h1>
+          <p className="text-sm text-muted-foreground">
             {dirs.length === 0
               ? "Create your first notebook to get started."
               : `${dirs.length} notebook${dirs.length === 1 ? "" : "s"} · ${folders.length} folder${folders.length === 1 ? "" : "s"}`}
@@ -117,48 +127,60 @@ function HomePage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {dirs.map((d, i) => {
             const folderCount = folders.filter((f) => f.directory_id === d.id).length;
+            const cover = coverFor(d as any, i);
             return (
-              <button
+              <div
                 key={d.id}
-                onClick={() => navigate({ to: "/app", search: { dir: d.id } })}
-                className="group relative text-left rounded-xl overflow-hidden border border-border bg-card hover:border-primary/50 hover:shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-1"
+                className="group relative rounded-xl overflow-hidden border border-border bg-card hover:border-primary/50 hover:shadow-[var(--shadow-elegant)] transition-all hover:-translate-y-1"
               >
-                {/* Notebook cover */}
-                <div
-                  className="aspect-[4/5] p-5 flex flex-col justify-between relative"
-                  style={{ background: coverFor(i) }}
+                <button
+                  onClick={() => navigate({ to: "/app", search: { dir: d.id } })}
+                  className="block w-full text-left"
                 >
-                  {/* Spine */}
-                  <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/20" />
-                  <div className="flex items-start justify-between">
-                    <BookOpen className="h-6 w-6 text-white/90" />
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm(`Delete notebook "${d.name}"?`)) removeDir.mutate(d.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded hover:bg-black/30 transition cursor-pointer"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-white" />
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-xs mono text-white/70 mb-1">NOTEBOOK</div>
-                    <div className="text-lg font-semibold text-white line-clamp-2" style={{ fontFamily: "var(--font-heading)" }}>
-                      {d.name}
+                  <div
+                    className="aspect-[4/5] p-5 flex flex-col justify-between relative"
+                    style={{ background: cover }}
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/20" />
+                    <div className="flex items-start justify-between">
+                      <BookOpen className="h-6 w-6 text-white/90" />
+                    </div>
+                    <div>
+                      <div className="text-xs mono text-white/70 mb-1">NOTEBOOK</div>
+                      <div className="text-lg font-semibold text-white line-clamp-2">
+                        {d.name}
+                      </div>
                     </div>
                   </div>
+                </button>
+
+                {/* Floating action buttons */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                  <CoverPicker
+                    currentSkin={(d as any).cover_skin ?? "nb_default"}
+                    ownedSkinIds={ownedSkinIds}
+                    onPick={(skinId) => setCover.mutate({ id: d.id, cover_skin: skinId })}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Delete notebook "${d.name}"?`)) removeDir.mutate(d.id);
+                    }}
+                    className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-white" />
+                  </button>
                 </div>
+
                 <div className="px-4 py-3 flex items-center justify-between text-xs text-muted-foreground mono border-t border-border">
                   <span>{folderCount} folder{folderCount === 1 ? "" : "s"}</span>
                   <span>{new Date(d.created_at).toLocaleDateString()}</span>
                 </div>
-              </button>
+              </div>
             );
           })}
 
-          {/* Add notebook card */}
           <button
             onClick={() => addDir.mutate()}
             className="group rounded-xl border-2 border-dashed border-border hover:border-primary/60 hover:bg-primary/5 transition-all flex flex-col items-center justify-center aspect-[4/5] text-muted-foreground hover:text-primary"
@@ -172,6 +194,94 @@ function HomePage() {
           <div className="text-center py-12 text-sm text-muted-foreground mono">loading...</div>
         )}
       </main>
+    </div>
+  );
+}
+
+function CoverPicker({
+  currentSkin,
+  ownedSkinIds,
+  onPick,
+}: {
+  currentSkin: string;
+  ownedSkinIds: Set<string>;
+  onPick: (skinId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition"
+        title="Change cover theme"
+      >
+        <Palette className="h-3.5 w-3.5 text-white" />
+      </button>
+      {open && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-full right-0 mt-2 z-30 w-64 rounded-lg border border-border bg-popover shadow-xl p-3"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground">
+              Cover theme
+            </div>
+            <Link to="/skins" className="text-[10px] mono text-primary hover:underline">
+              Get more
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+            {NOTEBOOK_SKINS.map((s) => {
+              const owned = ownedSkinIds.has(s.id);
+              const isActive = currentSkin === s.id;
+              const bg =
+                s.cover ??
+                "linear-gradient(135deg, hsl(244 70% 50%), hsl(20 85% 55%) 50%, hsl(150 60% 40%))";
+              return (
+                <button
+                  key={s.id}
+                  disabled={!owned}
+                  onClick={() => {
+                    if (!owned) return;
+                    onPick(s.id);
+                    setOpen(false);
+                  }}
+                  className={`relative aspect-[4/5] rounded-md overflow-hidden border-2 transition ${
+                    isActive ? "border-primary" : "border-transparent hover:border-border"
+                  } ${!owned ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
+                  style={{ background: bg }}
+                  title={s.name + (owned ? "" : " (locked)")}
+                >
+                  {isActive && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Check className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                  {!owned && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <Lock className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
