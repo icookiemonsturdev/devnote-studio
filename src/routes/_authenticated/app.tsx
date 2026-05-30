@@ -546,7 +546,7 @@ function NoteEditor({
               aria-pressed={isActive}
               className={`p-2 rounded transition ${
                 isActive
-                  ? "bg-primary/20 text-primary"
+                  ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
                   : "hover:bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >
