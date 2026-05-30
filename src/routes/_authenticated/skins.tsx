@@ -102,10 +102,10 @@ function SkinsPage() {
         <Tabs defaultValue="editor" className="w-full">
           <TabsList className="grid grid-cols-2 max-w-md mx-auto mb-8">
             <TabsTrigger value="editor" className="flex items-center gap-2">
-              <Palette className="h-4 w-4" /> Editor Skins
+              <Palette className="h-4 w-4" /> Editor Themes
             </TabsTrigger>
             <TabsTrigger value="notebook" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" /> Notebook Skins
+              <BookOpen className="h-4 w-4" /> Notebook Themes
             </TabsTrigger>
           </TabsList>
 
@@ -166,7 +166,7 @@ function SkinsPage() {
 
           <TabsContent value="notebook">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold">Notebook Skins</h2>
+              <h2 className="text-lg font-semibold">Notebook Themes</h2>
               <p className="text-sm text-muted-foreground">Style the notebook covers on your home page.</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
