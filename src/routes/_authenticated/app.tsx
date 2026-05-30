@@ -467,10 +467,8 @@ function NoteEditor({
         >
           <Type className="h-4 w-4" /> Fonts
         </button>
-        <ColorPicker
-          onMouseDownCapture={saveSelection}
-          onPick={(color) => exec("foreColor", color)}
-        />
+        <ColorPicker onPick={(color) => exec("foreColor", color)} />
+
 
         {showFontPicker && (
           <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3">
