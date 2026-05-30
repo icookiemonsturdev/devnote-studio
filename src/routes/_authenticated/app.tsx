@@ -351,13 +351,22 @@ function NoteEditor({
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [showFontPicker, setShowFontPicker] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const editorRef = useRef<HTMLDivElement | null>(null);
+  const savedSelectionRef = useRef<Range | null>(null);
 
   const setFont = useMutation({
     mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Font updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Editor font updated"); },
     onError: (e) => toast.error((e as Error).message),
   });
+
+  // Initialize editor HTML once per note
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== note.content) {
+      editorRef.current.innerHTML = note.content || "";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note.id]);
 
   // Debounced autosave
   useEffect(() => {
@@ -370,51 +379,52 @@ function NoteEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, content]);
 
-  function wrap(before: string, after: string = before) {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const selected = content.slice(start, end);
-    const next = content.slice(0, start) + before + selected + after + content.slice(end);
-    setContent(next);
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.setSelectionRange(start + before.length, end + before.length);
-    });
+  function saveSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && editorRef.current?.contains(sel.anchorNode)) {
+      savedSelectionRef.current = sel.getRangeAt(0).cloneRange();
+    }
   }
 
-  function linePrefix(prefix: string) {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const lineStart = content.lastIndexOf("\n", start - 1) + 1;
-    const next = content.slice(0, lineStart) + prefix + content.slice(lineStart);
-    setContent(next);
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.setSelectionRange(start + prefix.length, start + prefix.length);
-    });
+  function restoreSelection() {
+    const r = savedSelectionRef.current;
+    if (!r) {
+      editorRef.current?.focus();
+      return;
+    }
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(r);
+  }
+
+  function exec(command: string, value?: string) {
+    editorRef.current?.focus();
+    restoreSelection();
+    document.execCommand(command, false, value);
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
   }
 
   const tools: Array<{ icon: any; label: string; action: () => void }> = [
-    { icon: Heading1, label: "Heading 1", action: () => linePrefix("# ") },
-    { icon: Heading2, label: "Heading 2", action: () => linePrefix("## ") },
-    { icon: Bold, label: "Bold", action: () => wrap("**") },
-    { icon: Italic, label: "Italic", action: () => wrap("*") },
-    { icon: Code, label: "Code", action: () => wrap("`") },
-    { icon: Quote, label: "Quote", action: () => linePrefix("> ") },
-    { icon: List, label: "Bulleted list", action: () => linePrefix("- ") },
-    { icon: ListOrdered, label: "Numbered list", action: () => linePrefix("1. ") },
+    { icon: Heading1, label: "Heading 1", action: () => exec("formatBlock", "H1") },
+    { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2") },
+    { icon: Bold, label: "Bold", action: () => exec("bold") },
+    { icon: Italic, label: "Italic", action: () => exec("italic") },
+    { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE") },
+    { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE") },
+    { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList") },
+    { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList") },
     {
       icon: LinkIcon,
       label: "Link",
       action: () => {
         const url = prompt("URL");
-        if (url) wrap("[", `](${url})`);
+        if (url) exec("createLink", url);
       },
     },
   ];
+
+  const editorHeadingStack = getFontStack(headingFont);
+  const editorBodyStack = getFontStack(bodyFont);
 
   return (
     <>
@@ -423,7 +433,7 @@ function NoteEditor({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="flex-1 bg-transparent text-xl font-semibold focus:outline-none"
-          style={{ fontFamily: "var(--font-heading)" }}
+          style={{ fontFamily: editorHeadingStack }}
           maxLength={200}
           placeholder="Untitled"
         />
@@ -441,6 +451,7 @@ function NoteEditor({
         {tools.map((t) => (
           <button
             key={t.label}
+            onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
             onClick={t.action}
             title={t.label}
             className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
@@ -451,26 +462,14 @@ function NoteEditor({
         <div className="w-px h-5 bg-border mx-1" />
         <button
           onClick={() => setShowFontPicker((v) => !v)}
-          title="Font settings"
+          title="Editor font settings"
           className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono"
         >
           <Type className="h-4 w-4" /> Fonts
         </button>
         <ColorPicker
-          onPick={(color) => {
-            const ta = textareaRef.current;
-            if (!ta) return;
-            const start = ta.selectionStart;
-            const end = ta.selectionEnd;
-            const sel = content.slice(start, end) || "text";
-            const wrap = `<span style="color:${color}">${sel}</span>`;
-            const next = content.slice(0, start) + wrap + content.slice(end);
-            setContent(next);
-            requestAnimationFrame(() => {
-              ta.focus();
-              ta.setSelectionRange(start + wrap.length, start + wrap.length);
-            });
-          }}
+          onMouseDownCapture={saveSelection}
+          onPick={(color) => exec("foreColor", color)}
         />
 
         {showFontPicker && (
@@ -486,24 +485,45 @@ function NoteEditor({
               onChange={(id) => setFont.mutate({ body_font: id })}
             />
             <p className="text-[10px] mono text-muted-foreground">
-              Applied to your entire workspace. Free for everyone.
+              Applied to the editor only.
             </p>
           </div>
         )}
       </div>
 
-      <textarea
-        ref={textareaRef}
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Start writing... Use the toolbar above for **bold**, *italic*, # headings, lists, and more."
-        className="flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none resize-none"
-        style={{ fontFamily: "var(--font-body)" }}
-        maxLength={100000}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={(e) => setContent((e.target as HTMLDivElement).innerHTML)}
+        onBlur={saveSelection}
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
+        data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
+        className="prose-editor flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
+        style={{ fontFamily: editorBodyStack }}
       />
+
+      <style>{`
+        .prose-editor:empty:before {
+          content: attr(data-placeholder);
+          color: hsl(var(--muted-foreground) / 0.7);
+          pointer-events: none;
+        }
+        .prose-editor h1 { font-size: 1.875rem; font-weight: 700; margin: 0.75rem 0 0.5rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
+        .prose-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 0.75rem 0 0.5rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
+        .prose-editor ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+        .prose-editor ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+        .prose-editor li { margin: 0.15rem 0; }
+        .prose-editor blockquote { border-left: 3px solid hsl(var(--primary)); padding-left: 0.75rem; color: hsl(var(--muted-foreground)); margin: 0.5rem 0; }
+        .prose-editor pre { background: hsl(var(--muted)); padding: 0.75rem; border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.85em; overflow-x: auto; }
+        .prose-editor a { color: hsl(var(--primary)); text-decoration: underline; }
+        .prose-editor p { margin: 0.25rem 0; }
+      `}</style>
     </>
   );
 }
+
 
 function FontSelect({
   label,
