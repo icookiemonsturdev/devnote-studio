@@ -45,7 +45,8 @@ function HomePage() {
     mutationFn: async () => {
       const name = prompt("Notebook name");
       if (!name) return null;
-      return newDirFn({ data: { name } });
+      const defaultSkin = workspace.data?.profile?.active_notebook_skin ?? "nb_default";
+      return newDirFn({ data: { name, coverSkin: defaultSkin } });
     },
     onSuccess: (d) => {
       if (d) {
