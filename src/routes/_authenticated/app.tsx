@@ -608,6 +608,7 @@ function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
                 className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-xs mono focus:outline-none focus:ring-1 focus:ring-ring"
               />
               <button
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { onPick(custom); setOpen(false); }}
                 className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
               >
