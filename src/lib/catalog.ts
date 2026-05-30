@@ -49,11 +49,11 @@ export interface NotebookSkin {
 export const NOTEBOOK_SKINS: NotebookSkin[] = [
   {
     id: "nb_default",
-    name: "Classic Rainbow",
-    desc: "Default rotating gradient covers.",
+    name: "Classic Purple",
+    desc: "Default purple notebook cover.",
     free: true,
-    cover: null,
-    swatch: ["hsl(244 70% 50%)", "hsl(200 80% 45%)", "hsl(20 85% 55%)", "hsl(150 60% 40%)"],
+    cover: "linear-gradient(135deg, hsl(244 70% 50%), hsl(280 70% 55%))",
+    swatch: ["hsl(244 70% 50%)", "hsl(280 70% 55%)"],
   },
   {
     id: "nb_galaxy",

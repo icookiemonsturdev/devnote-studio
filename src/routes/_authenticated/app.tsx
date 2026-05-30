@@ -120,7 +120,9 @@ function AppPage() {
 
   const ws = workspace.data;
   const folders = ws?.folders ?? [];
-  const dirs = ws?.directories ?? [];
+  const allDirs = ws?.directories ?? [];
+  // When opened from a notebook (?dir=...), scope sidebar to JUST that notebook.
+  const dirs = dirParam ? allDirs.filter((d) => d.id === dirParam) : allDirs;
   const isSubscribed = ws?.subscriptionActive ?? false;
 
   return (
@@ -397,22 +399,44 @@ function NoteEditor({
     sel?.addRange(r);
   }
 
+  const [activeFormats, setActiveFormats] = useState<Record<string, boolean>>({});
+
+  function refreshActiveFormats() {
+    if (typeof document === "undefined") return;
+    try {
+      setActiveFormats({
+        bold: document.queryCommandState("bold"),
+        italic: document.queryCommandState("italic"),
+        underline: document.queryCommandState("underline"),
+        insertUnorderedList: document.queryCommandState("insertUnorderedList"),
+        insertOrderedList: document.queryCommandState("insertOrderedList"),
+        h1: document.queryCommandValue("formatBlock").toLowerCase() === "h1",
+        h2: document.queryCommandValue("formatBlock").toLowerCase() === "h2",
+        blockquote: document.queryCommandValue("formatBlock").toLowerCase() === "blockquote",
+        pre: document.queryCommandValue("formatBlock").toLowerCase() === "pre",
+      });
+    } catch {
+      /* no-op */
+    }
+  }
+
   function exec(command: string, value?: string) {
     editorRef.current?.focus();
     restoreSelection();
     document.execCommand(command, false, value);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
+    refreshActiveFormats();
   }
 
-  const tools: Array<{ icon: any; label: string; action: () => void }> = [
-    { icon: Heading1, label: "Heading 1", action: () => exec("formatBlock", "H1") },
-    { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2") },
-    { icon: Bold, label: "Bold", action: () => exec("bold") },
-    { icon: Italic, label: "Italic", action: () => exec("italic") },
-    { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE") },
-    { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE") },
-    { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList") },
-    { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList") },
+  const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
+    { icon: Heading1, label: "Heading 1", action: () => exec("formatBlock", "H1"), activeKey: "h1" },
+    { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2"), activeKey: "h2" },
+    { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
+    { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
+    { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE"), activeKey: "pre" },
+    { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE"), activeKey: "blockquote" },
+    { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
+    { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
       icon: LinkIcon,
       label: "Link",
@@ -448,17 +472,25 @@ function NoteEditor({
 
       {/* Toolbar */}
       <div className="px-8 py-2 border-b border-border flex items-center gap-1 flex-wrap relative">
-        {tools.map((t) => (
-          <button
-            key={t.label}
-            onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
-            onClick={t.action}
-            title={t.label}
-            className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
-          >
-            <t.icon className="h-4 w-4" />
-          </button>
-        ))}
+        {tools.map((t) => {
+          const isActive = t.activeKey ? !!activeFormats[t.activeKey] : false;
+          return (
+            <button
+              key={t.label}
+              onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
+              onClick={t.action}
+              title={t.label}
+              aria-pressed={isActive}
+              className={`p-2 rounded transition ${
+                isActive
+                  ? "bg-primary/20 text-primary"
+                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <t.icon className="h-4 w-4" />
+            </button>
+          );
+        })}
         <div className="w-px h-5 bg-border mx-1" />
         <button
           onClick={() => setShowFontPicker((v) => !v)}
@@ -493,10 +525,11 @@ function NoteEditor({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        onInput={(e) => setContent((e.target as HTMLDivElement).innerHTML)}
+        onInput={(e) => { setContent((e.target as HTMLDivElement).innerHTML); refreshActiveFormats(); }}
         onBlur={saveSelection}
-        onKeyUp={saveSelection}
-        onMouseUp={saveSelection}
+        onKeyUp={() => { saveSelection(); refreshActiveFormats(); }}
+        onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
+        onFocus={refreshActiveFormats}
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
         className="prose-editor flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
         style={{ fontFamily: editorBodyStack }}
