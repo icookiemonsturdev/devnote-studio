@@ -569,6 +569,7 @@ function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
   return (
     <div className="relative" ref={ref}>
       <button
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => setOpen((v) => !v)}
         title="Text color"
         className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5"
@@ -583,6 +584,7 @@ function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
             {PRESET_COLORS.map((c) => (
               <button
                 key={c}
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { onPick(c); setOpen(false); }}
                 className="h-7 w-7 rounded-full border-2 border-border hover:scale-110 transition"
                 style={{ background: c }}
