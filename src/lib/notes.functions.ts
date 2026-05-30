@@ -67,7 +67,7 @@ export const createDirectory = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: dir, error } = await context.supabase
       .from("directories")
-      .insert({ name: data.name, user_id: context.userId })
+      .insert({ name: data.name, user_id: context.userId, cover_skin: "nb_default" })
       .select()
       .single();
     if (error) throw new Error(error.message);
