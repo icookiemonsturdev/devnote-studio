@@ -209,43 +209,73 @@ function CoverPicker({
   onPick: (skinId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, [open]);
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition"
-        title="Change cover theme"
-      >
-        <Palette className="h-3.5 w-3.5 text-white" />
-      </button>
-      {open && (
-        <div
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-full right-0 mt-2 z-30 w-64 rounded-lg border border-border bg-popover shadow-xl p-3"
+          className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition"
+          title="Change cover theme"
         >
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground">
-              Cover theme
-            </div>
-            <Link to="/skins" className="text-[10px] mono text-primary hover:underline">
-              Get more
-            </Link>
+          <Palette className="h-3.5 w-3.5 text-white" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        className="w-72 p-3"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground">
+            Cover theme
           </div>
-          <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+          <Link to="/skins" className="text-[10px] mono text-primary hover:underline">
+            Get more
+          </Link>
+        </div>
+        <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
+          {NOTEBOOK_SKINS.map((s) => {
+            const owned = ownedSkinIds.has(s.id);
+            const isActive = currentSkin === s.id;
+            const bg =
+              s.cover ??
+              "linear-gradient(135deg, hsl(244 70% 50%), hsl(20 85% 55%) 50%, hsl(150 60% 40%))";
+            return (
+              <button
+                key={s.id}
+                disabled={!owned}
+                onClick={() => {
+                  if (!owned) return;
+                  onPick(s.id);
+                  setOpen(false);
+                }}
+                className={`relative aspect-[4/5] rounded-md overflow-hidden border-2 transition ${
+                  isActive ? "border-primary" : "border-transparent hover:border-border"
+                } ${!owned ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
+                style={{ background: bg }}
+                title={s.name + (owned ? "" : " (locked)")}
+              >
+                {isActive && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <Check className="h-4 w-4 text-white" />
+                  </div>
+                )}
+                {!owned && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <Lock className="h-3.5 w-3.5 text-white" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
             {NOTEBOOK_SKINS.map((s) => {
               const owned = ownedSkinIds.has(s.id);
               const isActive = currentSkin === s.id;
