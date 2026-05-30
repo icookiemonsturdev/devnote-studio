@@ -85,7 +85,7 @@ function HomePage() {
           <nav className="flex items-center gap-1">
             <Link to="/skins" className="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm hover:bg-muted transition">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span>Skins</span>
+              <span>Themes</span>
               {isSubscribed && <span className="text-[10px] mono text-primary ml-1">PRO</span>}
             </Link>
             <Link to="/settings" className="p-2 rounded hover:bg-muted" title="Settings">
