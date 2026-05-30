@@ -293,7 +293,7 @@ function AppPage() {
             >
               <div className="font-medium text-sm truncate">{n.title || "Untitled"}</div>
               <div className="text-xs text-muted-foreground truncate mt-0.5">
-                {n.content?.slice(0, 60) || "Empty"}
+                {(n.content?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 60)) || "Empty"}
               </div>
               <div className="text-[10px] text-muted-foreground mono mt-1">
                 {new Date(n.updated_at).toLocaleDateString()}
