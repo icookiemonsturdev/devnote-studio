@@ -399,22 +399,44 @@ function NoteEditor({
     sel?.addRange(r);
   }
 
+  const [activeFormats, setActiveFormats] = useState<Record<string, boolean>>({});
+
+  function refreshActiveFormats() {
+    if (typeof document === "undefined") return;
+    try {
+      setActiveFormats({
+        bold: document.queryCommandState("bold"),
+        italic: document.queryCommandState("italic"),
+        underline: document.queryCommandState("underline"),
+        insertUnorderedList: document.queryCommandState("insertUnorderedList"),
+        insertOrderedList: document.queryCommandState("insertOrderedList"),
+        h1: document.queryCommandValue("formatBlock").toLowerCase() === "h1",
+        h2: document.queryCommandValue("formatBlock").toLowerCase() === "h2",
+        blockquote: document.queryCommandValue("formatBlock").toLowerCase() === "blockquote",
+        pre: document.queryCommandValue("formatBlock").toLowerCase() === "pre",
+      });
+    } catch {
+      /* no-op */
+    }
+  }
+
   function exec(command: string, value?: string) {
     editorRef.current?.focus();
     restoreSelection();
     document.execCommand(command, false, value);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
+    refreshActiveFormats();
   }
 
-  const tools: Array<{ icon: any; label: string; action: () => void }> = [
-    { icon: Heading1, label: "Heading 1", action: () => exec("formatBlock", "H1") },
-    { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2") },
-    { icon: Bold, label: "Bold", action: () => exec("bold") },
-    { icon: Italic, label: "Italic", action: () => exec("italic") },
-    { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE") },
-    { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE") },
-    { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList") },
-    { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList") },
+  const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
+    { icon: Heading1, label: "Heading 1", action: () => exec("formatBlock", "H1"), activeKey: "h1" },
+    { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2"), activeKey: "h2" },
+    { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
+    { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
+    { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE"), activeKey: "pre" },
+    { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE"), activeKey: "blockquote" },
+    { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
+    { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
       icon: LinkIcon,
       label: "Link",
