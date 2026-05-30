@@ -494,7 +494,12 @@ function NoteEditor({
     restoreSelection();
     document.execCommand(command, false, value);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
+    // Save the new selection so subsequent toolbar clicks work, and refresh
+    // active formats multiple times to catch async DOM updates.
+    saveSelection();
+    refreshActiveFormats();
     requestAnimationFrame(refreshActiveFormats);
+    setTimeout(refreshActiveFormats, 30);
   }
 
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
@@ -653,12 +658,30 @@ function FontSelect({
   );
 }
 
-const PRESET_COLORS = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#a855f7"];
+const PRESET_COLORS: Array<{ name: string; value: string }> = [
+  { name: "Red", value: "#ef4444" },
+  { name: "Blue", value: "#3b82f6" },
+  { name: "Green", value: "#10b981" },
+  { name: "Purple", value: "#a855f7" },
+];
+
+const CUSTOM_COLORS_KEY = "dev_notes_custom_colors";
+const MAX_CUSTOM_COLORS = 3;
 
 function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("#ec4899");
+  const [savedCustom, setSavedCustom] = useState<string[]>([]);
   const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_COLORS_KEY);
+      if (raw) setSavedCustom(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -668,6 +691,23 @@ function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
+
+  function applyAndSaveCustom(color: string) {
+    onPick(color);
+    setSavedCustom((prev) => {
+      const next = [color, ...prev.filter((c) => c.toLowerCase() !== color.toLowerCase())].slice(
+        0,
+        MAX_CUSTOM_COLORS,
+      );
+      try {
+        localStorage.setItem(CUSTOM_COLORS_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+    setOpen(false);
+  }
 
   return (
     <div className="relative" ref={ref}>
@@ -681,43 +721,79 @@ function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
         <span className="h-2 w-4 rounded-sm" style={{ background: custom }} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 z-30 w-56 rounded-lg border border-border bg-popover shadow-lg p-3">
-          <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">Text color</div>
-          <div className="flex items-center gap-2 mb-3">
+        <div className="absolute top-full left-0 mt-1 z-30 w-72 rounded-lg border border-border bg-popover shadow-lg p-4 animate-scale-in">
+          <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">
+            Text color
+          </div>
+          <div className="flex items-center gap-3 mb-4">
             {PRESET_COLORS.map((c) => (
               <button
-                key={c}
+                key={c.value}
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => { onPick(c); setOpen(false); }}
-                className="h-7 w-7 rounded-full border-2 border-border hover:scale-110 transition"
-                style={{ background: c }}
-                title={c}
+                onClick={() => {
+                  onPick(c.value);
+                  setOpen(false);
+                }}
+                className="h-9 w-9 rounded-full border-2 border-border hover:scale-110 hover:shadow-md transition-transform"
+                style={{ background: c.value }}
+                title={c.name}
               />
             ))}
           </div>
+
+          {savedCustom.length > 0 && (
+            <div className="mb-4">
+              <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">
+                Recent custom
+              </div>
+              <div className="flex items-center gap-2">
+                {savedCustom.map((c) => (
+                  <button
+                    key={c}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      onPick(c);
+                      setOpen(false);
+                    }}
+                    className="h-8 w-8 rounded-full border-2 border-border hover:scale-110 transition-transform"
+                    style={{ background: c }}
+                    title={c}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="border-t border-border pt-3">
-            <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">Custom</div>
-            <div className="flex items-center gap-2">
+            <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">
+              Custom color
+            </div>
+            <div className="flex items-center gap-2 mb-2">
               <input
                 type="color"
                 value={custom}
                 onChange={(e) => setCustom(e.target.value)}
-                className="h-9 w-12 rounded cursor-pointer border border-border bg-transparent"
+                className="h-16 w-20 rounded cursor-pointer border border-border bg-transparent p-0"
               />
-              <input
-                type="text"
-                value={custom}
-                onChange={(e) => setCustom(e.target.value)}
-                className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-xs mono focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-              <button
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => { onPick(custom); setOpen(false); }}
-                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
-              >
-                Apply
-              </button>
+              <div className="flex-1 space-y-2">
+                <input
+                  type="text"
+                  value={custom}
+                  onChange={(e) => setCustom(e.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs mono focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+                <button
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => applyAndSaveCustom(custom)}
+                  className="w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition"
+                >
+                  Apply & Save
+                </button>
+              </div>
             </div>
+            <p className="text-[10px] mono text-muted-foreground">
+              Up to {MAX_CUSTOM_COLORS} saved custom colors.
+            </p>
           </div>
         </div>
       )}
