@@ -278,7 +278,7 @@ function CoverPicker({
             );
           })}
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
