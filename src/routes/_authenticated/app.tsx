@@ -233,7 +233,7 @@ function AppPage() {
             className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted text-sm flex-1"
           >
             <Sparkles className="h-4 w-4 text-primary" />
-            <span>Skins</span>
+            <span>Themes</span>
             {isSubscribed && <span className="ml-auto text-[10px] mono text-primary">PRO</span>}
           </Link>
           <Link to="/settings" className="p-2 rounded hover:bg-muted" title="Settings">
