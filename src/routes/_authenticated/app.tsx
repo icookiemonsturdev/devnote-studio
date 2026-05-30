@@ -456,28 +456,38 @@ function NoteEditor({
   function refreshActiveFormats() {
     if (typeof document === "undefined") return;
     try {
+      const formatBlock = String(document.queryCommandValue("formatBlock") || "").toLowerCase();
       setActiveFormats({
         bold: document.queryCommandState("bold"),
         italic: document.queryCommandState("italic"),
         underline: document.queryCommandState("underline"),
         insertUnorderedList: document.queryCommandState("insertUnorderedList"),
         insertOrderedList: document.queryCommandState("insertOrderedList"),
-        h1: document.queryCommandValue("formatBlock").toLowerCase() === "h1",
-        h2: document.queryCommandValue("formatBlock").toLowerCase() === "h2",
-        blockquote: document.queryCommandValue("formatBlock").toLowerCase() === "blockquote",
-        pre: document.queryCommandValue("formatBlock").toLowerCase() === "pre",
+        h1: formatBlock === "h1" || formatBlock === "heading 1",
+        h2: formatBlock === "h2" || formatBlock === "heading 2",
+        blockquote: formatBlock === "blockquote",
+        pre: formatBlock === "pre",
       });
     } catch {
       /* no-op */
     }
   }
 
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const sel = window.getSelection();
+      if (sel?.anchorNode && editorRef.current?.contains(sel.anchorNode)) refreshActiveFormats();
+    };
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () => document.removeEventListener("selectionchange", onSelectionChange);
+  }, []);
+
   function exec(command: string, value?: string) {
     editorRef.current?.focus();
     restoreSelection();
     document.execCommand(command, false, value);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
-    refreshActiveFormats();
+    requestAnimationFrame(refreshActiveFormats);
   }
 
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
@@ -485,6 +495,7 @@ function NoteEditor({
     { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2"), activeKey: "h2" },
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
+    { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
     { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE"), activeKey: "pre" },
     { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE"), activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
