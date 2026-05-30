@@ -525,10 +525,11 @@ function NoteEditor({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        onInput={(e) => setContent((e.target as HTMLDivElement).innerHTML)}
+        onInput={(e) => { setContent((e.target as HTMLDivElement).innerHTML); refreshActiveFormats(); }}
         onBlur={saveSelection}
-        onKeyUp={saveSelection}
-        onMouseUp={saveSelection}
+        onKeyUp={() => { saveSelection(); refreshActiveFormats(); }}
+        onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
+        onFocus={refreshActiveFormats}
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
         className="prose-editor flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
         style={{ fontFamily: editorBodyStack }}
