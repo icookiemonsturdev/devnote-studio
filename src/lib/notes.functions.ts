@@ -152,7 +152,6 @@ export const updateProfile = createServerFn({ method: "POST" })
       heading_font: z.string().min(1).max(40).optional(),
       body_font: z.string().min(1).max(40).optional(),
       active_notebook_skin: z.string().min(1).max(40).optional(),
-
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -160,6 +159,25 @@ export const updateProfile = createServerFn({ method: "POST" })
       .from("profiles")
       .update(data)
       .eq("id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const updateDirectory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      id: z.string().uuid(),
+      cover_skin: z.string().min(1).max(40).optional(),
+      name: z.string().min(1).max(80).optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { id, ...patch } = data;
+    const { error } = await context.supabase
+      .from("directories")
+      .update(patch)
+      .eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
