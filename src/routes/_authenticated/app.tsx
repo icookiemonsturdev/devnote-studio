@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Heading1, Heading2, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
+  Bold, Italic, Underline, Heading1, Heading2, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
@@ -46,8 +46,11 @@ function AppPage() {
   useEffect(() => {
     if (!dirParam || !workspace.data) return;
     setExpandedDirs((s) => new Set([...s, dirParam]));
-    const firstFolder = workspace.data.folders.find((f) => f.directory_id === dirParam);
-    if (firstFolder) setActiveFolder((cur) => cur ?? firstFolder.id);
+    const folderIds = workspace.data.folders
+      .filter((f) => f.directory_id === dirParam)
+      .map((f) => f.id);
+    setActiveFolder((cur) => (cur && folderIds.includes(cur) ? cur : (folderIds[0] ?? null)));
+    setActiveNoteId(null);
   }, [dirParam, workspace.data]);
 
   // Apply only the editor skin globally; fonts are scoped to the editor itself.
@@ -123,6 +126,8 @@ function AppPage() {
   const allDirs = ws?.directories ?? [];
   // When opened from a notebook (?dir=...), scope sidebar to JUST that notebook.
   const dirs = dirParam ? allDirs.filter((d) => d.id === dirParam) : allDirs;
+  const currentDir = dirParam ? dirs[0] : null;
+  const currentDirFolders = dirParam ? folders.filter((f) => f.directory_id === dirParam) : [];
   const isSubscribed = ws?.subscriptionActive ?? false;
 
   return (
@@ -150,6 +155,17 @@ function AppPage() {
 
         <div className="flex-1 overflow-y-auto py-2">
           {workspace.isLoading && <div className="px-4 text-xs text-muted-foreground mono">loading...</div>}
+          {dirParam && currentDir && !workspace.isLoading && (
+            <div className="px-4 pb-2 pt-1">
+              <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">
+                Current notebook
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-sidebar-border bg-muted/40 px-3 py-2">
+                <FolderTree className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm font-medium text-sidebar-foreground truncate">{currentDir.name}</span>
+              </div>
+            </div>
+          )}
           {dirs.length === 0 && !workspace.isLoading && (
             <div className="px-4 py-8 text-center">
               <FolderTree className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
@@ -163,7 +179,46 @@ function AppPage() {
             </div>
           )}
 
-          {dirs.map((d) => {
+          {dirParam && currentDir && !workspace.isLoading && (
+            <div className="px-2 space-y-1">
+              <div className="flex items-center justify-between px-2 py-1">
+                <span className="text-[10px] mono uppercase tracking-wider text-muted-foreground">Folders</span>
+                <button
+                  onClick={() => addFolder.mutate(currentDir.id)}
+                  title="New folder"
+                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
+                >
+                  <FolderPlus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              {currentDirFolders.length === 0 && (
+                <div className="text-xs text-muted-foreground mono py-2 px-2">empty</div>
+              )}
+              {currentDirFolders.map((f) => (
+                <div
+                  key={f.id}
+                  className={`group flex items-center gap-1 py-1 px-2 rounded cursor-pointer transition ${
+                    activeFolder === f.id ? "bg-primary/15 text-foreground" : "hover:bg-muted/50"
+                  }`}
+                  onClick={() => { setActiveFolder(f.id); setActiveNoteId(null); }}
+                >
+                  <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="text-sm truncate flex-1">{f.name}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Delete folder "${f.name}"?`)) removeFolder.mutate(f.id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!dirParam && dirs.map((d) => {
             const open = expandedDirs.has(d.id);
             const dirFolders = folders.filter((f) => f.directory_id === d.id);
             return (
@@ -173,7 +228,8 @@ function AppPage() {
                     onClick={() =>
                       setExpandedDirs((s) => {
                         const n = new Set(s);
-                        n.has(d.id) ? n.delete(d.id) : n.add(d.id);
+                        if (n.has(d.id)) n.delete(d.id);
+                        else n.add(d.id);
                         return n;
                       })
                     }
@@ -215,7 +271,10 @@ function AppPage() {
                         <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="text-sm truncate flex-1">{f.name}</span>
                         <button
-                          onClick={(e) => { e.stopPropagation(); confirm(`Delete folder "${f.name}"?`) && removeFolder.mutate(f.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Delete folder "${f.name}"?`)) removeFolder.mutate(f.id);
+                          }}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -404,28 +463,38 @@ function NoteEditor({
   function refreshActiveFormats() {
     if (typeof document === "undefined") return;
     try {
+      const formatBlock = String(document.queryCommandValue("formatBlock") || "").toLowerCase();
       setActiveFormats({
         bold: document.queryCommandState("bold"),
         italic: document.queryCommandState("italic"),
         underline: document.queryCommandState("underline"),
         insertUnorderedList: document.queryCommandState("insertUnorderedList"),
         insertOrderedList: document.queryCommandState("insertOrderedList"),
-        h1: document.queryCommandValue("formatBlock").toLowerCase() === "h1",
-        h2: document.queryCommandValue("formatBlock").toLowerCase() === "h2",
-        blockquote: document.queryCommandValue("formatBlock").toLowerCase() === "blockquote",
-        pre: document.queryCommandValue("formatBlock").toLowerCase() === "pre",
+        h1: formatBlock === "h1" || formatBlock === "heading 1",
+        h2: formatBlock === "h2" || formatBlock === "heading 2",
+        blockquote: formatBlock === "blockquote",
+        pre: formatBlock === "pre",
       });
     } catch {
       /* no-op */
     }
   }
 
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const sel = window.getSelection();
+      if (sel?.anchorNode && editorRef.current?.contains(sel.anchorNode)) refreshActiveFormats();
+    };
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () => document.removeEventListener("selectionchange", onSelectionChange);
+  }, []);
+
   function exec(command: string, value?: string) {
     editorRef.current?.focus();
     restoreSelection();
     document.execCommand(command, false, value);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
-    refreshActiveFormats();
+    requestAnimationFrame(refreshActiveFormats);
   }
 
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
@@ -433,6 +502,7 @@ function NoteEditor({
     { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2"), activeKey: "h2" },
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
+    { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
     { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE"), activeKey: "pre" },
     { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE"), activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
@@ -483,7 +553,7 @@ function NoteEditor({
               aria-pressed={isActive}
               className={`p-2 rounded transition ${
                 isActive
-                  ? "bg-primary/20 text-primary"
+                  ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
                   : "hover:bg-muted text-muted-foreground hover:text-foreground"
               }`}
             >

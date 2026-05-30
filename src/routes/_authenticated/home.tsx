@@ -9,7 +9,7 @@ import {
 import { getWorkspace, createDirectory, deleteDirectory, updateDirectory } from "@/lib/notes.functions";
 import { NOTEBOOK_SKINS } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: HomePage,
@@ -211,8 +211,8 @@ function CoverPicker({
   const [open, setOpen] = useState(false);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <button
           onClick={(e) => e.stopPropagation()}
           className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition"
@@ -220,23 +220,29 @@ function CoverPicker({
         >
           <Palette className="h-3.5 w-3.5 text-white" />
         </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        side="bottom"
-        sideOffset={8}
-        className="w-72 p-3"
+      </DialogTrigger>
+      <DialogContent
+        className="w-[min(92vw,42rem)] max-w-2xl p-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground">
+        <DialogHeader className="pr-8">
+          <DialogTitle className="flex items-center gap-2">
+            <Palette className="h-4 w-4 text-primary" />
             Cover theme
+          </DialogTitle>
+          <DialogDescription>
+            Choose a cover for this notebook from your available themes.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-between">
+          <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground">
+            Available covers
           </div>
           <Link to="/skins" className="text-[10px] mono text-primary hover:underline">
             Get more
           </Link>
         </div>
-        <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto pr-1">
           {NOTEBOOK_SKINS.map((s) => {
             const owned = ownedSkinIds.has(s.id);
             const isActive = currentSkin === s.id;
@@ -272,7 +278,7 @@ function CoverPicker({
             );
           })}
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
