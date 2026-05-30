@@ -155,6 +155,17 @@ function AppPage() {
 
         <div className="flex-1 overflow-y-auto py-2">
           {workspace.isLoading && <div className="px-4 text-xs text-muted-foreground mono">loading...</div>}
+          {dirParam && currentDir && !workspace.isLoading && (
+            <div className="px-4 pb-2 pt-1">
+              <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">
+                Current notebook
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-sidebar-border bg-muted/40 px-3 py-2">
+                <FolderTree className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm font-medium text-sidebar-foreground truncate">{currentDir.name}</span>
+              </div>
+            </div>
+          )}
           {dirs.length === 0 && !workspace.isLoading && (
             <div className="px-4 py-8 text-center">
               <FolderTree className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
@@ -168,6 +179,43 @@ function AppPage() {
             </div>
           )}
 
+          {dirParam && currentDir && !workspace.isLoading && (
+            <div className="px-2 space-y-1">
+              <div className="flex items-center justify-between px-2 py-1">
+                <span className="text-[10px] mono uppercase tracking-wider text-muted-foreground">Folders</span>
+                <button
+                  onClick={() => addFolder.mutate(currentDir.id)}
+                  title="New folder"
+                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
+                >
+                  <FolderPlus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              {currentDirFolders.length === 0 && (
+                <div className="text-xs text-muted-foreground mono py-2 px-2">empty</div>
+              )}
+              {currentDirFolders.map((f) => (
+                <div
+                  key={f.id}
+                  className={`group flex items-center gap-1 py-1 px-2 rounded cursor-pointer transition ${
+                    activeFolder === f.id ? "bg-primary/15 text-foreground" : "hover:bg-muted/50"
+                  }`}
+                  onClick={() => { setActiveFolder(f.id); setActiveNoteId(null); }}
+                >
+                  <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="text-sm truncate flex-1">{f.name}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); confirm(`Delete folder "${f.name}"?`) && removeFolder.mutate(f.id); }}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!dirParam &&
           {dirs.map((d) => {
             const open = expandedDirs.has(d.id);
             const dirFolders = folders.filter((f) => f.directory_id === d.id);
@@ -231,7 +279,7 @@ function AppPage() {
                 )}
               </div>
             );
-          })}
+          })}}
         </div>
 
         <div className="border-t border-sidebar-border p-2 flex items-center justify-between">
