@@ -246,4 +246,56 @@
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
+
+  /* Animations */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shine-sweep {
+    0%   { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+    40%  { opacity: 0.7; }
+    100% { transform: translateX(220%) skewX(-20deg); opacity: 0; }
+  }
+  @keyframes float-soft {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out both;
+  }
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out both;
+  }
+
+  .notebook-card .shine::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: translateX(-120%) skewX(-20deg);
+    opacity: 0;
+  }
+  .notebook-card:hover .shine::after {
+    animation: shine-sweep 0.9s ease-out forwards;
+  }
+
+  .hover-lift {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Subtle press feedback on buttons */
+  button:active {
+    transform: scale(0.97);
+  }
 }
