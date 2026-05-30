@@ -141,14 +141,15 @@ function HomePage() {
                   className="block w-full text-left"
                 >
                   <div
-                    className="aspect-[4/5] p-5 flex flex-col justify-between relative"
+                    className="aspect-[4/5] p-5 flex flex-col justify-between relative overflow-hidden"
                     style={{ background: cover }}
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/20" />
-                    <div className="flex items-start justify-between">
-                      <BookOpen className="h-6 w-6 text-white/90" />
+                    <div className="shine pointer-events-none absolute inset-0" />
+                    <div className="flex items-start justify-between relative">
+                      <BookOpen className="h-6 w-6 text-white/90 transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-110" />
                     </div>
-                    <div>
+                    <div className="relative">
                       <div className="text-xs mono text-white/70 mb-1">NOTEBOOK</div>
                       <div className="text-lg font-semibold text-white line-clamp-2">
                         {d.name}
