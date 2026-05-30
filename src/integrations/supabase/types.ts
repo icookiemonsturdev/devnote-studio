@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       directories: {
         Row: {
+          cover_skin: string
           created_at: string
           id: string
           name: string
@@ -23,6 +24,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cover_skin?: string
           created_at?: string
           id?: string
           name: string
@@ -30,6 +32,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cover_skin?: string
           created_at?: string
           id?: string
           name?: string
