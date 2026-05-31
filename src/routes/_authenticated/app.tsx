@@ -858,6 +858,7 @@ function NoteEditor({
         onBlur={saveSelection}
         onKeyUp={() => { saveSelection(); refreshActiveFormats(); }}
         onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
+        onClick={handleEditorClick}
         onFocus={refreshActiveFormats}
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
         className="prose-editor editor-paper flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
@@ -878,10 +879,94 @@ function NoteEditor({
         .prose-editor h6 { font-size: 0.9rem; font-weight: 700; margin: 0.55rem 0 0.3rem; font-family: ${JSON.stringify(editorHeadingStack)}; opacity: 0.8; letter-spacing: 0; }
         .prose-editor ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+        .prose-editor ul ul { list-style: circle; }
+        .prose-editor ul ul ul { list-style: square; }
         .prose-editor li { margin: 0.15rem 0; }
         .prose-editor pre { background: var(--muted); padding: 0.75rem; border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.85em; overflow-x: auto; }
         .prose-editor a { color: var(--primary); text-decoration: underline; }
         .prose-editor p { margin: 0.25rem 0; }
+
+        /* Apple-style checklist */
+        .prose-editor ul.checklist {
+          list-style: none;
+          padding-left: 0.25rem;
+          margin: 0.5rem 0;
+        }
+        .prose-editor ul.checklist li {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.55rem;
+          margin: 0.25rem 0;
+          padding: 0.15rem 0.25rem;
+          border-radius: 0.375rem;
+          transition: background-color 0.15s ease;
+        }
+        .prose-editor ul.checklist li:hover { background: color-mix(in oklab, var(--muted) 50%, transparent); }
+        .prose-editor ul.checklist .check-box {
+          flex-shrink: 0;
+          width: 1.05rem;
+          height: 1.05rem;
+          margin-top: 0.18rem;
+          border-radius: 999px;
+          border: 1.5px solid color-mix(in oklab, var(--muted-foreground) 60%, transparent);
+          background: transparent;
+          cursor: pointer;
+          display: inline-block;
+          position: relative;
+          transition: all 0.18s ease;
+          user-select: none;
+        }
+        .prose-editor ul.checklist .check-box:hover {
+          border-color: var(--primary);
+          transform: scale(1.1);
+        }
+        .prose-editor ul.checklist li[data-checked="true"] .check-box {
+          background: var(--primary);
+          border-color: var(--primary);
+        }
+        .prose-editor ul.checklist li[data-checked="true"] .check-box:after {
+          content: "";
+          position: absolute;
+          left: 4px;
+          top: 1px;
+          width: 5px;
+          height: 9px;
+          border: solid var(--primary-foreground);
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+        .prose-editor ul.checklist li[data-checked="true"] .check-text {
+          text-decoration: line-through;
+          opacity: 0.55;
+        }
+        .prose-editor ul.checklist .check-text { flex: 1; }
+
+        /* Apple-style grid (table) */
+        .prose-editor table.grid-table {
+          border-collapse: separate;
+          border-spacing: 0;
+          margin: 0.75rem 0;
+          width: 100%;
+          border: 1px solid var(--border);
+          border-radius: 0.5rem;
+          overflow: hidden;
+          background: color-mix(in oklab, var(--background) 60%, transparent);
+        }
+        .prose-editor table.grid-table td {
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          padding: 0.5rem 0.65rem;
+          min-width: 60px;
+          vertical-align: top;
+          transition: background-color 0.12s ease;
+        }
+        .prose-editor table.grid-table td:last-child { border-right: none; }
+        .prose-editor table.grid-table tr:last-child td { border-bottom: none; }
+        .prose-editor table.grid-table td:focus,
+        .prose-editor table.grid-table td:focus-within {
+          outline: none;
+          background: color-mix(in oklab, var(--primary) 8%, transparent);
+        }
       `}</style>
     </>
   );
