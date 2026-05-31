@@ -420,11 +420,21 @@ function AppPage() {
               headingFont={ws?.profile?.heading_font ?? "inter"}
               bodyFont={ws?.profile?.body_font ?? "inter"}
               onSave={(patch) => saveNote.mutate({ id: n.id, ...patch })}
-              onDelete={() => confirm("Delete this note?") && removeNote.mutate(n.id)}
+              onDelete={async () => {
+                const ok = await prompt.ask({
+                  title: "Delete this note?",
+                  description: "This permanently removes the note and its contents.",
+                  confirmOnly: true,
+                  destructive: true,
+                  confirmLabel: "Delete note",
+                });
+                if (ok !== null) removeNote.mutate(n.id);
+              }}
             />
           );
         })()}
       </main>
+      {prompt.node}
     </div>
   );
 }
