@@ -186,6 +186,8 @@
 }
 
 [data-skin="terracotta"] {
+  --font-heading: 'Special Elite', 'Lora', ui-serif, serif;
+  --font-body: 'Lora', ui-serif, serif;
   --background: oklch(0.18 0.04 40); --foreground: oklch(0.95 0.03 60);
   --card: oklch(0.23 0.05 40); --card-foreground: oklch(0.95 0.03 60);
   --popover: oklch(0.23 0.05 40); --popover-foreground: oklch(0.95 0.03 60);
