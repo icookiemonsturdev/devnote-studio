@@ -78,20 +78,6 @@ function AppPage() {
     qc.invalidateQueries({ queryKey: ["notes", activeFolder] });
   };
 
-  const addDir = useMutation({
-    mutationFn: async () => {
-      const name = await prompt.ask({
-        title: "New notebook",
-        description: "Give your notebook a memorable name.",
-        placeholder: "e.g. Research, Side project, Journal…",
-        confirmLabel: "Create notebook",
-      });
-      if (!name) return null;
-      return newDirFn({ data: { name } });
-    },
-    onSuccess: (d) => { if (d) { invalidateWs(); setExpandedDirs((s) => new Set([...s, d.id])); } },
-    onError: (e) => toast.error(e.message),
-  });
 
   const addFolder = useMutation({
     mutationFn: async (directoryId: string) => {
