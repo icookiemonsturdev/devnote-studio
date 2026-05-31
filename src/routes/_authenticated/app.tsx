@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree,
   Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Palette,
-  Search, X,
+  Search, X, CheckSquare, Table as TableIcon,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
