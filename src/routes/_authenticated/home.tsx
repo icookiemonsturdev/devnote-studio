@@ -10,6 +10,7 @@ import { getWorkspace, createDirectory, deleteDirectory, updateDirectory } from 
 import { NOTEBOOK_SKINS } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { usePromptDialog } from "@/components/PromptDialog";
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: HomePage,
