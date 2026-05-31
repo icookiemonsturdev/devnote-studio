@@ -779,7 +779,6 @@ function NoteEditor({
         .prose-editor ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor li { margin: 0.15rem 0; }
-        .prose-editor blockquote { border-left: 3px solid var(--primary); padding: 0.55rem 0.75rem; color: var(--muted-foreground); margin: 0.5rem 0; background: color-mix(in oklab, var(--primary) 8%, transparent); border-radius: 0 0.375rem 0.375rem 0; }
         .prose-editor pre { background: var(--muted); padding: 0.75rem; border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.85em; overflow-x: auto; }
         .prose-editor a { color: var(--primary); text-decoration: underline; }
         .prose-editor p { margin: 0.25rem 0; }
