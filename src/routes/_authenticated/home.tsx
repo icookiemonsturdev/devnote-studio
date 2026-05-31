@@ -77,6 +77,16 @@ function HomePage() {
     onError: (e) => toast.error((e as Error).message),
   });
 
+  const renameDir = useMutation({
+    mutationFn: (vars: { id: string; name: string }) =>
+      updateDirFn({ data: vars }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["workspace"] });
+      toast.success("Notebook renamed");
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
+
   const ws = workspace.data;
   const dirs = ws?.directories ?? [];
   const folders = ws?.folders ?? [];
