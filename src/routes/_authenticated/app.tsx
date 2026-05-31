@@ -462,14 +462,19 @@ function NoteEditor({
 
   const setFont = useMutation({
     mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
-    onMutate: (data) => {
-      // Optimistically apply the new font so the editor updates immediately.
+    onMutate: async (data) => {
+      await qc.cancelQueries({ queryKey: ["workspace"] });
+      const previousWorkspace = qc.getQueryData(["workspace"]);
       qc.setQueryData<any>(["workspace"], (prev: any) =>
         prev?.profile ? { ...prev, profile: { ...prev.profile, ...data } } : prev,
       );
+      return { previousWorkspace };
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Editor font updated"); },
-    onError: (e) => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.error((e as Error).message); },
+    onSuccess: () => { toast.success("Editor font updated"); },
+    onError: (e, _data, context) => {
+      if (context?.previousWorkspace) qc.setQueryData(["workspace"], context.previousWorkspace);
+      toast.error((e as Error).message);
+    },
   });
 
   // Initialize editor HTML once per note
@@ -535,7 +540,7 @@ function NoteEditor({
       const tagName = (node as HTMLElement).tagName;
       if (tagName) {
         const tag = normalizeBlockTag(tagName);
-        if (/^(h[1-6]|p|blockquote|pre)$/.test(tag)) return tag;
+        if (/^(h[1-6]|p|pre)$/.test(tag)) return tag;
       }
       node = node.parentNode;
     }
@@ -547,7 +552,7 @@ function NoteEditor({
     if (typeof document === "undefined") return;
     try {
       let block = getCurrentBlockTag();
-      if (!/^(h[1-6]|p|blockquote|pre)$/.test(block)) block = "p";
+      if (!/^(h[1-6]|p|pre)$/.test(block)) block = "p";
       setCurrentBlock(block);
       setActiveFormats({
         bold: document.queryCommandState("bold"),
@@ -555,7 +560,6 @@ function NoteEditor({
         underline: document.queryCommandState("underline"),
         insertUnorderedList: document.queryCommandState("insertUnorderedList"),
         insertOrderedList: document.queryCommandState("insertOrderedList"),
-        blockquote: block === "blockquote",
         pre: block === "pre",
       });
       const colorVal = String(document.queryCommandValue("foreColor") || "");
@@ -596,7 +600,6 @@ function NoteEditor({
     restoreSelection();
     const normalized = normalizeBlockTag(block);
     const values =
-      normalized === "blockquote" ? ["BLOCKQUOTE", "<blockquote>"] :
       normalized === "pre" ? ["PRE", "<pre>"] :
       normalized === "p" ? ["P", "<p>"] :
       [normalized.toUpperCase(), `<${normalized}>`];
@@ -619,7 +622,7 @@ function NoteEditor({
     let node: Node | null = sel.anchorNode.nodeType === Node.TEXT_NODE ? sel.anchorNode.parentNode : sel.anchorNode;
     while (node && node !== root) {
       const name = (node as HTMLElement).tagName;
-      if (name && /^(H[1-6]|P|DIV|BLOCKQUOTE|PRE)$/i.test(name)) break;
+      if (name && /^(H[1-6]|P|DIV|PRE)$/i.test(name)) break;
       node = node.parentNode;
     }
     if (!node || node === root) return;
@@ -776,7 +779,6 @@ function NoteEditor({
         .prose-editor ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor li { margin: 0.15rem 0; }
-        .prose-editor blockquote { border-left: 3px solid var(--primary); padding: 0.55rem 0.75rem; color: var(--muted-foreground); margin: 0.5rem 0; background: color-mix(in oklab, var(--primary) 8%, transparent); border-radius: 0 0.375rem 0.375rem 0; }
         .prose-editor pre { background: var(--muted); padding: 0.75rem; border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.85em; overflow-x: auto; }
         .prose-editor a { color: var(--primary); text-decoration: underline; }
         .prose-editor p { margin: 0.25rem 0; }
