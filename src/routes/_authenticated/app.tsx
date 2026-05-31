@@ -299,11 +299,18 @@ function AppPage() {
                         <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="text-sm truncate flex-1">{f.name}</span>
                         <button
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            if (confirm(`Delete folder "${f.name}"?`)) removeFolder.mutate(f.id);
+                            const ok = await prompt.ask({
+                              title: `Delete "${f.name}"?`,
+                              description: "This permanently removes the folder and all its notes.",
+                              confirmOnly: true,
+                              destructive: true,
+                              confirmLabel: "Delete",
+                            });
+                            if (ok !== null) removeFolder.mutate(f.id);
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded active:scale-90"
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
