@@ -129,6 +129,9 @@ function AppPage() {
   const currentDir = dirParam ? dirs[0] : null;
   const currentDirFolders = dirParam ? folders.filter((f) => f.directory_id === dirParam) : [];
   const isSubscribed = ws?.subscriptionActive ?? false;
+  const searchTerm = folderSearch.trim().toLowerCase();
+  const matchesSearch = (name: string) => !searchTerm || name.toLowerCase().includes(searchTerm);
+  const visibleCurrentFolders = currentDirFolders.filter((f) => matchesSearch(f.name));
 
   return (
     <div className="min-h-screen flex" style={{ background: "var(--gradient-surface)" }}>
