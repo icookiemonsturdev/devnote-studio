@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree,
   Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Palette,
-  Search, X,
+  Search, X, CheckSquare, Table as TableIcon,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
@@ -45,6 +45,7 @@ function AppPage() {
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [folderSearch, setFolderSearch] = useState("");
+  const [noteSearch, setNoteSearch] = useState("");
 
   // Auto-expand directory passed via ?dir= and select its first folder
   useEffect(() => {
@@ -359,12 +360,35 @@ function AppPage() {
             <button
               onClick={() => addNote.mutate(activeFolder)}
               title="New note"
-              className="p-1.5 rounded hover:bg-muted text-primary"
+              className="p-1.5 rounded hover:bg-muted text-primary transition hover:scale-110 active:scale-95"
             >
               <FilePlus className="h-4 w-4" />
             </button>
           )}
         </div>
+        {activeFolder && (notesQuery.data?.length ?? 0) > 0 && (
+          <div className="px-3 py-2 border-b border-border">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={noteSearch}
+                onChange={(e) => setNoteSearch(e.target.value)}
+                placeholder="Search notes"
+                className="w-full pl-7 pr-7 py-1.5 text-xs rounded-md border border-border bg-muted/40 text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary/60 focus:ring-1 focus:ring-primary/40"
+              />
+              {noteSearch && (
+                <button
+                  onClick={() => setNoteSearch("")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
+                  title="Clear"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto">
           {!activeFolder && (
             <div className="px-4 py-12 text-center text-xs text-muted-foreground mono">
@@ -383,7 +407,22 @@ function AppPage() {
               </button>
             </div>
           )}
-          {notesQuery.data?.map((n) => (
+          {(() => {
+            const term = noteSearch.trim().toLowerCase();
+            const visibleNotes = (notesQuery.data ?? []).filter((n) => {
+              if (!term) return true;
+              const title = (n.title || "").toLowerCase();
+              const body = (n.content || "").replace(/<[^>]+>/g, " ").toLowerCase();
+              return title.includes(term) || body.includes(term);
+            });
+            if (activeFolder && (notesQuery.data?.length ?? 0) > 0 && visibleNotes.length === 0) {
+              return (
+                <div className="px-4 py-8 text-center text-xs text-muted-foreground mono">
+                  no matches
+                </div>
+              );
+            }
+            return visibleNotes.map((n) => (
             <div
               key={n.id}
               onClick={() => setActiveNoteId(n.id)}
@@ -420,9 +459,11 @@ function AppPage() {
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
-          ))}
+            ));
+          })()}
         </div>
       </div>
+
 
       {/* Editor */}
       <main className="flex-1 flex flex-col">
@@ -445,6 +486,29 @@ function AppPage() {
               headingFont={ws?.profile?.heading_font ?? "inter"}
               bodyFont={ws?.profile?.body_font ?? "inter"}
               onSave={(patch) => saveNote.mutate({ id: n.id, ...patch })}
+              askLink={() =>
+                prompt.ask({
+                  title: "Insert link",
+                  description: "Paste or type a URL. The selected text becomes a link.",
+                  placeholder: "https://example.com",
+                  confirmLabel: "Add link",
+                })
+              }
+              askGrid={async () => {
+                const raw = await prompt.ask({
+                  title: "Insert grid",
+                  description: "Enter dimensions as rows x columns (e.g. 3x4).",
+                  placeholder: "3x3",
+                  defaultValue: "3x3",
+                  confirmLabel: "Insert grid",
+                });
+                if (!raw) return null;
+                const m = raw.match(/^(\d+)\s*[x×*]\s*(\d+)$/i);
+                if (!m) return null;
+                const rows = Math.min(20, Math.max(1, parseInt(m[1], 10)));
+                const cols = Math.min(20, Math.max(1, parseInt(m[2], 10)));
+                return { rows, cols };
+              }}
               onDelete={async () => {
                 const ok = await prompt.ask({
                   title: "Delete this note?",
@@ -471,12 +535,16 @@ function NoteEditor({
   bodyFont,
   onSave,
   onDelete,
+  askLink,
+  askGrid,
 }: {
   note: { id: string; title: string; content: string };
   headingFont: string;
   bodyFont: string;
   onSave: (patch: { title?: string; content?: string }) => void;
   onDelete: () => void;
+  askLink: () => Promise<string | null>;
+  askGrid: () => Promise<{ rows: number; cols: number } | null>;
 }) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
@@ -642,6 +710,63 @@ function NoteEditor({
     sel.addRange(range);
   }
 
+  function insertHTML(html: string) {
+    if (document.activeElement !== editorRef.current) {
+      editorRef.current?.focus();
+      restoreSelection();
+    }
+    document.execCommand("insertHTML", false, html);
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+    saveSelection();
+    refreshActiveFormats();
+  }
+
+  function insertChecklist() {
+    insertHTML(
+      `<ul class="checklist" data-checklist="1"><li data-checked="false"><span class="check-box" contenteditable="false"></span><span class="check-text">New item</span></li></ul><p><br/></p>`,
+    );
+  }
+
+  function insertGrid(rows: number, cols: number) {
+    const rowsHtml = Array.from({ length: rows })
+      .map(
+        () =>
+          `<tr>${Array.from({ length: cols })
+            .map(() => `<td><br/></td>`)
+            .join("")}</tr>`,
+      )
+      .join("");
+    insertHTML(`<table class="grid-table"><tbody>${rowsHtml}</tbody></table><p><br/></p>`);
+  }
+
+  async function handleLink() {
+    saveSelection();
+    const url = await askLink();
+    if (!url) return;
+    const finalUrl = /^(https?:|mailto:|tel:|\/)/i.test(url) ? url : `https://${url}`;
+    exec("createLink", finalUrl);
+  }
+
+  async function handleGrid() {
+    saveSelection();
+    const dims = await askGrid();
+    if (!dims) return;
+    insertGrid(dims.rows, dims.cols);
+  }
+
+  // Toggle checkbox clicks inside the editor
+  function handleEditorClick(e: React.MouseEvent<HTMLDivElement>) {
+    const target = e.target as HTMLElement;
+    if (target.classList?.contains("check-box")) {
+      const li = target.closest("li");
+      if (li) {
+        const isChecked = li.getAttribute("data-checked") === "true";
+        li.setAttribute("data-checked", isChecked ? "false" : "true");
+        if (editorRef.current) setContent(editorRef.current.innerHTML);
+      }
+    }
+  }
+
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
@@ -649,14 +774,9 @@ function NoteEditor({
     { icon: Code, label: "Code", action: () => formatBlock(getCurrentBlockTag() === "pre" ? "p" : "pre"), activeKey: "pre" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
-    {
-      icon: LinkIcon,
-      label: "Link",
-      action: () => {
-        const url = window.prompt("URL");
-        if (url) exec("createLink", url);
-      },
-    },
+    { icon: CheckSquare, label: "Checklist", action: insertChecklist },
+    { icon: TableIcon, label: "Insert grid", action: handleGrid },
+    { icon: LinkIcon, label: "Link", action: handleLink },
   ];
 
   const BLOCK_OPTIONS: Array<{ value: string; label: string }> = [
@@ -737,6 +857,7 @@ function NoteEditor({
         onBlur={saveSelection}
         onKeyUp={() => { saveSelection(); refreshActiveFormats(); }}
         onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
+        onClick={handleEditorClick}
         onFocus={refreshActiveFormats}
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
         className="prose-editor editor-paper flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
@@ -757,10 +878,94 @@ function NoteEditor({
         .prose-editor h6 { font-size: 0.9rem; font-weight: 700; margin: 0.55rem 0 0.3rem; font-family: ${JSON.stringify(editorHeadingStack)}; opacity: 0.8; letter-spacing: 0; }
         .prose-editor ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+        .prose-editor ul ul { list-style: circle; }
+        .prose-editor ul ul ul { list-style: square; }
         .prose-editor li { margin: 0.15rem 0; }
         .prose-editor pre { background: var(--muted); padding: 0.75rem; border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.85em; overflow-x: auto; }
         .prose-editor a { color: var(--primary); text-decoration: underline; }
         .prose-editor p { margin: 0.25rem 0; }
+
+        /* Apple-style checklist */
+        .prose-editor ul.checklist {
+          list-style: none;
+          padding-left: 0.25rem;
+          margin: 0.5rem 0;
+        }
+        .prose-editor ul.checklist li {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.55rem;
+          margin: 0.25rem 0;
+          padding: 0.15rem 0.25rem;
+          border-radius: 0.375rem;
+          transition: background-color 0.15s ease;
+        }
+        .prose-editor ul.checklist li:hover { background: color-mix(in oklab, var(--muted) 50%, transparent); }
+        .prose-editor ul.checklist .check-box {
+          flex-shrink: 0;
+          width: 1.05rem;
+          height: 1.05rem;
+          margin-top: 0.18rem;
+          border-radius: 999px;
+          border: 1.5px solid color-mix(in oklab, var(--muted-foreground) 60%, transparent);
+          background: transparent;
+          cursor: pointer;
+          display: inline-block;
+          position: relative;
+          transition: all 0.18s ease;
+          user-select: none;
+        }
+        .prose-editor ul.checklist .check-box:hover {
+          border-color: var(--primary);
+          transform: scale(1.1);
+        }
+        .prose-editor ul.checklist li[data-checked="true"] .check-box {
+          background: var(--primary);
+          border-color: var(--primary);
+        }
+        .prose-editor ul.checklist li[data-checked="true"] .check-box:after {
+          content: "";
+          position: absolute;
+          left: 4px;
+          top: 1px;
+          width: 5px;
+          height: 9px;
+          border: solid var(--primary-foreground);
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+        .prose-editor ul.checklist li[data-checked="true"] .check-text {
+          text-decoration: line-through;
+          opacity: 0.55;
+        }
+        .prose-editor ul.checklist .check-text { flex: 1; }
+
+        /* Apple-style grid (table) */
+        .prose-editor table.grid-table {
+          border-collapse: separate;
+          border-spacing: 0;
+          margin: 0.75rem 0;
+          width: 100%;
+          border: 1px solid var(--border);
+          border-radius: 0.5rem;
+          overflow: hidden;
+          background: color-mix(in oklab, var(--background) 60%, transparent);
+        }
+        .prose-editor table.grid-table td {
+          border-right: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          padding: 0.5rem 0.65rem;
+          min-width: 60px;
+          vertical-align: top;
+          transition: background-color 0.12s ease;
+        }
+        .prose-editor table.grid-table td:last-child { border-right: none; }
+        .prose-editor table.grid-table tr:last-child td { border-bottom: none; }
+        .prose-editor table.grid-table td:focus,
+        .prose-editor table.grid-table td:focus-within {
+          outline: none;
+          background: color-mix(in oklab, var(--primary) 8%, transparent);
+        }
       `}</style>
     </>
   );
