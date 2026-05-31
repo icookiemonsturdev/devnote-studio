@@ -94,7 +94,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Outlet />
+        <MatrixRain />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <Outlet />
+        </div>
         <Toaster theme="dark" position="bottom-right" />
       </AuthProvider>
     </QueryClientProvider>
