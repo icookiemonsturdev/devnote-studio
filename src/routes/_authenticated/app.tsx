@@ -452,6 +452,7 @@ function AppPage() {
                   confirmOnly: true,
                   destructive: true,
                   confirmLabel: "Delete note",
+                  skipKey: "delete-note",
                 });
                 if (ok !== null) removeNote.mutate(n.id);
               }}
