@@ -5,12 +5,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
-  FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
+  FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree,
   Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
-  createDirectory, createFolder, createNote,
+  createFolder, createNote,
   updateNote, deleteNote, deleteFolder, deleteDirectory,
 } from "@/lib/notes.functions";
 import { getFontStack } from "@/lib/catalog";
@@ -29,7 +29,7 @@ function AppPage() {
   const notesFn = useServerFn(getNotesByFolder);
   const noteFn = useServerFn(getNote);
 
-  const newDirFn = useServerFn(createDirectory);
+  
   const newFolderFn = useServerFn(createFolder);
   const newNoteFn = useServerFn(createNote);
   const saveNoteFn = useServerFn(updateNote);
@@ -78,20 +78,6 @@ function AppPage() {
     qc.invalidateQueries({ queryKey: ["notes", activeFolder] });
   };
 
-  const addDir = useMutation({
-    mutationFn: async () => {
-      const name = await prompt.ask({
-        title: "New notebook",
-        description: "Give your notebook a memorable name.",
-        placeholder: "e.g. Research, Side project, Journal…",
-        confirmLabel: "Create notebook",
-      });
-      if (!name) return null;
-      return newDirFn({ data: { name } });
-    },
-    onSuccess: (d) => { if (d) { invalidateWs(); setExpandedDirs((s) => new Set([...s, d.id])); } },
-    onError: (e) => toast.error(e.message),
-  });
 
   const addFolder = useMutation({
     mutationFn: async (directoryId: string) => {
@@ -151,18 +137,6 @@ function AppPage() {
             <FileCode2 className="h-5 w-5 text-primary" />
             <span className="mono text-sm font-semibold text-sidebar-foreground">dev_notes</span>
           </Link>
-          <div className="flex items-center gap-1">
-            <Link to="/home" title="All notebooks" className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition">
-              <Home className="h-4 w-4" />
-            </Link>
-            <button
-              onClick={() => addDir.mutate()}
-              title="New notebook"
-              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
-            >
-              <FolderTree className="h-4 w-4" />
-            </button>
-          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2">
@@ -181,13 +155,10 @@ function AppPage() {
           {dirs.length === 0 && !workspace.isLoading && (
             <div className="px-4 py-8 text-center">
               <FolderTree className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-muted-foreground mb-3">No directories yet</p>
-              <button
-                onClick={() => addDir.mutate()}
-                className="text-xs mono text-primary hover:underline"
-              >
-                + create one
-              </button>
+              <p className="text-xs text-muted-foreground mb-3">No notebooks yet</p>
+              <Link to="/home" className="text-xs mono text-primary hover:underline">
+                go to home to create one
+              </Link>
             </div>
           )}
 
