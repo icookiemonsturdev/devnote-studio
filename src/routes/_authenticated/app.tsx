@@ -169,13 +169,10 @@ function AppPage() {
           {dirs.length === 0 && !workspace.isLoading && (
             <div className="px-4 py-8 text-center">
               <FolderTree className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-muted-foreground mb-3">No directories yet</p>
-              <button
-                onClick={() => addDir.mutate()}
-                className="text-xs mono text-primary hover:underline"
-              >
-                + create one
-              </button>
+              <p className="text-xs text-muted-foreground mb-3">No notebooks yet</p>
+              <Link to="/home" className="text-xs mono text-primary hover:underline">
+                go to home to create one
+              </Link>
             </div>
           )}
 
