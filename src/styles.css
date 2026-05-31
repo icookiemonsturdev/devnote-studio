@@ -544,59 +544,15 @@
   background: linear-gradient(180deg, transparent 60%, oklch(0.20 0.06 350 / 0.4));
 }
 
-/* ---------- Matrix: vertical glyph rain in discrete columns ---------- */
-[data-skin="matrix"] body::before {
-  /* faint scanlines */
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 2px,
-      rgba(0, 255, 120, 0.05) 2px 3px
-    );
-  animation: skin-flicker 3s steps(8) infinite;
-}
+/* ---------- Matrix: canvas-based rain handled by <MatrixRain />.
+   Keep pseudo-elements empty so they don't overlay the canvas. ---------- */
+[data-skin="matrix"] body::before,
 [data-skin="matrix"] body::after {
-  /* falling columns of glyphs via repeating linear-gradient masked by a moving vertical strip */
-  background-image:
-    /* column 1 */
-    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.9) 5%, oklch(0.55 0.18 145 / 0.4) 20%, transparent 40%),
-    /* column 2 */
-    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.7) 4%, oklch(0.55 0.18 145 / 0.3) 18%, transparent 35%),
-    /* column 3 */
-    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.85) 3%, oklch(0.55 0.18 145 / 0.35) 22%, transparent 42%),
-    /* column 4 */
-    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.6) 6%, oklch(0.55 0.18 145 / 0.25) 25%, transparent 48%),
-    /* column 5 */
-    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.95) 4%, oklch(0.55 0.18 145 / 0.4) 19%, transparent 38%),
-    /* column 6 */
-    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.7) 5%, oklch(0.55 0.18 145 / 0.3) 21%, transparent 40%),
-    /* column 7 */
-    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.8) 4%, oklch(0.55 0.18 145 / 0.32) 23%, transparent 44%);
-  background-repeat: no-repeat;
-  background-size:
-    14px 70vh, 14px 55vh, 14px 80vh, 14px 45vh,
-    14px 65vh, 14px 50vh, 14px 75vh;
-  background-position:
-    8%  -70vh, 19% -30vh, 31% -90vh, 44% -10vh,
-    58% -60vh, 73% -40vh, 87% -80vh;
-  animation:
-    matrix-col-1 4.5s linear infinite,
-    matrix-col-2 6.2s linear infinite,
-    matrix-col-3 3.8s linear infinite,
-    matrix-col-4 7.4s linear infinite,
-    matrix-col-5 5.1s linear infinite,
-    matrix-col-6 4.2s linear infinite,
-    matrix-col-7 6.8s linear infinite;
-  mix-blend-mode: screen;
-  opacity: 0.9;
+  background: none;
+  animation: none;
+  content: none;
+  display: none;
 }
-@keyframes matrix-col-1 { to { background-position: 8% 120vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
-@keyframes matrix-col-2 { to { background-position: 8% -70vh,  19% 120vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
-@keyframes matrix-col-3 { to { background-position: 8% -70vh,  19% -30vh, 31% 120vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
-@keyframes matrix-col-4 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% 120vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
-@keyframes matrix-col-5 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% 120vh, 73% -40vh, 87% -80vh; } }
-@keyframes matrix-col-6 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% 120vh, 87% -80vh; } }
-@keyframes matrix-col-7 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% 120vh; } }
 [data-skin="matrix"] * { text-shadow: 0 0 1px currentColor; }
 
 /* ---------- Noir: gold film grain + vignette ---------- */
