@@ -696,6 +696,8 @@ function FontSelect({
 }
 
 const PRESET_COLORS: Array<{ name: string; value: string }> = [
+  { name: "Black", value: "#000000" },
+  { name: "White", value: "#ffffff" },
   { name: "Red", value: "#ef4444" },
   { name: "Blue", value: "#3b82f6" },
   { name: "Green", value: "#10b981" },
