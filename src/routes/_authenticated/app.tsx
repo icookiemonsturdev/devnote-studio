@@ -705,7 +705,7 @@ const PRESET_COLORS: Array<{ name: string; value: string }> = [
 const CUSTOM_COLORS_KEY = "dev_notes_custom_colors";
 const MAX_CUSTOM_COLORS = 3;
 
-function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
+function ColorPicker({ onPick, currentColor }: { onPick: (color: string) => void; currentColor?: string }) {
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("#ec4899");
   const [savedCustom, setSavedCustom] = useState<string[]>([]);
