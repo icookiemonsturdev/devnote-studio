@@ -17,6 +17,18 @@ export const Route = createFileRoute("/_authenticated/skins")({
   }),
 });
 
+const CHECKOUT_THEME_BY_SKIN: Record<SkinId, { backgroundColor: string; buttonColor: string }> = {
+  midnight: { backgroundColor: "#0a0a1a", buttonColor: "#4f46e5" },
+  aurora: { backgroundColor: "#0b1a1f", buttonColor: "#2dd4a8" },
+  sunset: { backgroundColor: "#1a0d08", buttonColor: "#ff6b35" },
+  matrix: { backgroundColor: "#08120a", buttonColor: "#22c55e" },
+  noir: { backgroundColor: "#0d0d0d", buttonColor: "#c9a84c" },
+  arctic: { backgroundColor: "#e8f0f8", buttonColor: "#2e6b8a" },
+  terracotta: { backgroundColor: "#2f1710", buttonColor: "#c4654a" },
+  sakura: { backgroundColor: "#fef0f5", buttonColor: "#e88aab" },
+  ember: { backgroundColor: "#1a1a1a", buttonColor: "#e85d3a" },
+};
+
 function SkinsPage() {
   const qc = useQueryClient();
   const wsFn = useServerFn(getWorkspace);
@@ -265,6 +277,7 @@ function SkinsPage() {
         const headerBg = notebookSkin?.cover
           ?? (editorSkin ? `linear-gradient(135deg, ${editorSkin.colors.join(", ")})` : null)
           ?? (activeSkin ? `linear-gradient(135deg, ${activeSkin.colors.join(", ")})` : "var(--gradient-primary, linear-gradient(135deg, hsl(244 70% 50%), hsl(280 70% 55%)))");
+        const checkoutTheme = CHECKOUT_THEME_BY_SKIN[active] ?? CHECKOUT_THEME_BY_SKIN.midnight;
 
         return (
           <div
@@ -310,6 +323,8 @@ function SkinsPage() {
                 <StripeEmbeddedCheckout
                   priceId={checkoutPrice.priceId}
                   skinId={checkoutPrice.skinId}
+                  returnUrl={`${window.location.origin}/skins?checkout=success&session_id={CHECKOUT_SESSION_ID}`}
+                  theme={checkoutTheme}
                 />
               </div>
             </div>
