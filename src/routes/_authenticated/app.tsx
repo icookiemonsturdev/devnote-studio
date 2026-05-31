@@ -360,12 +360,35 @@ function AppPage() {
             <button
               onClick={() => addNote.mutate(activeFolder)}
               title="New note"
-              className="p-1.5 rounded hover:bg-muted text-primary"
+              className="p-1.5 rounded hover:bg-muted text-primary transition hover:scale-110 active:scale-95"
             >
               <FilePlus className="h-4 w-4" />
             </button>
           )}
         </div>
+        {activeFolder && (notesQuery.data?.length ?? 0) > 0 && (
+          <div className="px-3 py-2 border-b border-border">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={noteSearch}
+                onChange={(e) => setNoteSearch(e.target.value)}
+                placeholder="Search notes"
+                className="w-full pl-7 pr-7 py-1.5 text-xs rounded-md border border-border bg-muted/40 text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary/60 focus:ring-1 focus:ring-primary/40"
+              />
+              {noteSearch && (
+                <button
+                  onClick={() => setNoteSearch("")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
+                  title="Clear"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto">
           {!activeFolder && (
             <div className="px-4 py-12 text-center text-xs text-muted-foreground mono">
@@ -384,7 +407,22 @@ function AppPage() {
               </button>
             </div>
           )}
-          {notesQuery.data?.map((n) => (
+          {(() => {
+            const term = noteSearch.trim().toLowerCase();
+            const visibleNotes = (notesQuery.data ?? []).filter((n) => {
+              if (!term) return true;
+              const title = (n.title || "").toLowerCase();
+              const body = (n.content || "").replace(/<[^>]+>/g, " ").toLowerCase();
+              return title.includes(term) || body.includes(term);
+            });
+            if (activeFolder && (notesQuery.data?.length ?? 0) > 0 && visibleNotes.length === 0) {
+              return (
+                <div className="px-4 py-8 text-center text-xs text-muted-foreground mono">
+                  no matches
+                </div>
+              );
+            }
+            return visibleNotes.map((n) => (
             <div
               key={n.id}
               onClick={() => setActiveNoteId(n.id)}
@@ -421,9 +459,11 @@ function AppPage() {
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
-          ))}
+            ));
+          })()}
         </div>
       </div>
+
 
       {/* Editor */}
       <main className="flex-1 flex flex-col">
