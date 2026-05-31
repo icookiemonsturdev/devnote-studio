@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
-  createDirectory, createFolder, createNote,
+  createFolder, createNote,
   updateNote, deleteNote, deleteFolder, deleteDirectory,
 } from "@/lib/notes.functions";
 import { getFontStack } from "@/lib/catalog";
