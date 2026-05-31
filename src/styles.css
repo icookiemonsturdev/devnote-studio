@@ -218,6 +218,8 @@
 }
 
 [data-skin="ember"] {
+  --font-heading: 'Russo One', 'Bebas Neue', ui-sans-serif, sans-serif;
+  --font-body: 'IBM Plex Mono', ui-monospace, monospace;
   --background: oklch(0.15 0.01 30); --foreground: oklch(0.96 0.02 50);
   --card: oklch(0.20 0.02 30); --card-foreground: oklch(0.96 0.02 50);
   --popover: oklch(0.20 0.02 30); --popover-foreground: oklch(0.96 0.02 50);
