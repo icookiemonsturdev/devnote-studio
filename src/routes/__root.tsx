@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/hooks/use-auth";
+import { MatrixRain } from "@/components/MatrixRain";
 
 import appCss from "../styles.css?url";
 
