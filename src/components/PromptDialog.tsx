@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Sparkles } from "lucide-react";
 
 type PromptOpts = {
@@ -18,11 +19,35 @@ type PromptOpts = {
   destructive?: boolean;
   /** When set, dialog becomes a yes/no confirmation (no input). */
   confirmOnly?: boolean;
+  /**
+   * When provided on a confirmOnly dialog, shows a "Don't ask me again" checkbox.
+   * If the user previously opted out for this key, the dialog auto-confirms.
+   */
+  skipKey?: string;
 };
 
 type PendingState = PromptOpts & {
   resolve: (value: string | null) => void;
 };
+
+const SKIP_PREFIX = "dn-skip-confirm:";
+
+function isSkipped(key?: string) {
+  if (!key) return false;
+  try {
+    return typeof window !== "undefined" && window.localStorage.getItem(SKIP_PREFIX + key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setSkipped(key: string) {
+  try {
+    window.localStorage.setItem(SKIP_PREFIX + key, "1");
+  } catch {
+    /* ignore */
+  }
+}
 
 /**
  * Themed replacement for `window.prompt` / `window.confirm`.
@@ -31,10 +56,16 @@ type PendingState = PromptOpts & {
 export function usePromptDialog() {
   const [pending, setPending] = useState<PendingState | null>(null);
   const [value, setValue] = useState("");
+  const [dontAsk, setDontAsk] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const ask = useCallback((opts: PromptOpts): Promise<string | null> => {
+    // Auto-confirm if user previously opted out for this skipKey.
+    if (opts.confirmOnly && isSkipped(opts.skipKey)) {
+      return Promise.resolve("");
+    }
     setValue(opts.defaultValue ?? "");
+    setDontAsk(false);
     return new Promise((resolve) => {
       setPending({ ...opts, resolve });
       requestAnimationFrame(() => inputRef.current?.focus());
@@ -42,12 +73,17 @@ export function usePromptDialog() {
   }, []);
 
   const close = (result: string | null) => {
+    if (result !== null && pending?.confirmOnly && pending?.skipKey && dontAsk) {
+      setSkipped(pending.skipKey);
+    }
     pending?.resolve(result);
     setPending(null);
     setValue("");
+    setDontAsk(false);
   };
 
   const confirmOnly = !!pending?.confirmOnly;
+  const showSkip = confirmOnly && !!pending?.skipKey;
 
   const node = (
     <Dialog
@@ -90,6 +126,16 @@ export function usePromptDialog() {
               className="w-full rounded-md border border-input bg-input/60 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground shadow-inner outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/35"
             />
           </form>
+        )}
+
+        {showSkip && (
+          <label className="flex items-center gap-2 pl-12 pr-1 -mt-1 cursor-pointer select-none text-xs text-muted-foreground hover:text-foreground transition">
+            <Checkbox
+              checked={dontAsk}
+              onCheckedChange={(v) => setDontAsk(v === true)}
+            />
+            <span>Don't ask me again</span>
+          </label>
         )}
 
         <DialogFooter className="gap-2 sm:gap-2 border-t border-border/70 pt-4">
