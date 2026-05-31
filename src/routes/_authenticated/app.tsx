@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Underline, Heading1, Heading2, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
+  Bold, Italic, Underline, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
@@ -459,22 +459,36 @@ function NoteEditor({
   }
 
   const [activeFormats, setActiveFormats] = useState<Record<string, boolean>>({});
+  const [currentBlock, setCurrentBlock] = useState<string>("p");
+  const [currentColor, setCurrentColor] = useState<string>("#a855f7");
+
+  function rgbToHex(rgb: string): string {
+    const m = rgb.match(/\d+/g);
+    if (!m || m.length < 3) return rgb;
+    const [r, g, b] = m.map(Number);
+    return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
+  }
 
   function refreshActiveFormats() {
     if (typeof document === "undefined") return;
     try {
-      const formatBlock = String(document.queryCommandValue("formatBlock") || "").toLowerCase();
+      const raw = String(document.queryCommandValue("formatBlock") || "").toLowerCase();
+      let block = raw.replace("heading ", "h");
+      if (!/^(h[1-6]|p|blockquote|pre)$/.test(block)) block = "p";
+      setCurrentBlock(block);
       setActiveFormats({
         bold: document.queryCommandState("bold"),
         italic: document.queryCommandState("italic"),
         underline: document.queryCommandState("underline"),
         insertUnorderedList: document.queryCommandState("insertUnorderedList"),
         insertOrderedList: document.queryCommandState("insertOrderedList"),
-        h1: formatBlock === "h1" || formatBlock === "heading 1",
-        h2: formatBlock === "h2" || formatBlock === "heading 2",
-        blockquote: formatBlock === "blockquote",
-        pre: formatBlock === "pre",
+        blockquote: block === "blockquote",
+        pre: block === "pre",
       });
+      const colorVal = String(document.queryCommandValue("foreColor") || "");
+      if (colorVal) {
+        setCurrentColor(colorVal.startsWith("rgb") ? rgbToHex(colorVal) : colorVal);
+      }
     } catch {
       /* no-op */
     }
@@ -490,21 +504,21 @@ function NoteEditor({
   }, []);
 
   function exec(command: string, value?: string) {
-    editorRef.current?.focus();
-    restoreSelection();
+    // Selection is preserved by toolbar buttons' onMouseDown preventDefault.
+    // Only focus if editor lost focus (e.g. after prompt() for link URL),
+    // because focusing a focused editor can collapse the selection.
+    if (document.activeElement !== editorRef.current) {
+      editorRef.current?.focus();
+      restoreSelection();
+    }
     document.execCommand(command, false, value);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
-    // Save the new selection so subsequent toolbar clicks work, and refresh
-    // active formats multiple times to catch async DOM updates.
     saveSelection();
     refreshActiveFormats();
     requestAnimationFrame(refreshActiveFormats);
-    setTimeout(refreshActiveFormats, 30);
   }
 
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
-    { icon: Heading1, label: "Heading 1", action: () => exec("formatBlock", "H1"), activeKey: "h1" },
-    { icon: Heading2, label: "Heading 2", action: () => exec("formatBlock", "H2"), activeKey: "h2" },
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
     { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
@@ -520,6 +534,16 @@ function NoteEditor({
         if (url) exec("createLink", url);
       },
     },
+  ];
+
+  const BLOCK_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: "p", label: "Paragraph" },
+    { value: "h1", label: "Heading 1" },
+    { value: "h2", label: "Heading 2" },
+    { value: "h3", label: "Heading 3" },
+    { value: "h4", label: "Heading 4" },
+    { value: "h5", label: "Heading 5" },
+    { value: "h6", label: "Heading 6" },
   ];
 
   const editorHeadingStack = getFontStack(headingFont);
@@ -546,7 +570,19 @@ function NoteEditor({
       </div>
 
       {/* Toolbar */}
-      <div className="px-8 py-2 border-b border-border flex items-center gap-1 flex-wrap relative">
+      <div className="px-8 py-2 border-b border-border flex items-center gap-1 flex-wrap relative animate-fade-in">
+        <select
+          value={currentBlock.startsWith("h") || currentBlock === "p" ? currentBlock : "p"}
+          onMouseDown={(e) => { saveSelection(); }}
+          onChange={(e) => exec("formatBlock", e.target.value === "p" ? "P" : e.target.value.toUpperCase())}
+          className="h-8 rounded-md border border-border bg-background px-2 text-xs mono focus:outline-none focus:ring-1 focus:ring-ring hover:border-primary/60 transition cursor-pointer"
+          title="Block type"
+        >
+          {BLOCK_OPTIONS.map((b) => (
+            <option key={b.value} value={b.value}>{b.label}</option>
+          ))}
+        </select>
+        <div className="w-px h-5 bg-border mx-1" />
         {tools.map((t) => {
           const isActive = t.activeKey ? !!activeFormats[t.activeKey] : false;
           return (
@@ -556,10 +592,10 @@ function NoteEditor({
               onClick={t.action}
               title={t.label}
               aria-pressed={isActive}
-              className={`p-2 rounded transition ${
+              className={`p-2 rounded transition-all duration-150 active:scale-90 ${
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
-                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30 scale-105"
+                  : "hover:bg-muted text-muted-foreground hover:text-foreground hover:scale-105"
               }`}
             >
               <t.icon className="h-4 w-4" />
@@ -567,18 +603,19 @@ function NoteEditor({
           );
         })}
         <div className="w-px h-5 bg-border mx-1" />
+        <ColorPicker currentColor={currentColor} onPick={(color) => exec("foreColor", color)} />
+        <div className="w-px h-5 bg-border mx-1" />
         <button
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => setShowFontPicker((v) => !v)}
           title="Editor font settings"
-          className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono"
+          className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono hover:scale-105"
         >
           <Type className="h-4 w-4" /> Fonts
         </button>
-        <ColorPicker onPick={(color) => exec("foreColor", color)} />
-
 
         {showFontPicker && (
-          <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3">
+          <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3 animate-scale-in">
             <FontSelect
               label="Heading font"
               value={headingFont}
@@ -668,7 +705,7 @@ const PRESET_COLORS: Array<{ name: string; value: string }> = [
 const CUSTOM_COLORS_KEY = "dev_notes_custom_colors";
 const MAX_CUSTOM_COLORS = 3;
 
-function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
+function ColorPicker({ onPick, currentColor }: { onPick: (color: string) => void; currentColor?: string }) {
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("#ec4899");
   const [savedCustom, setSavedCustom] = useState<string[]>([]);
@@ -718,7 +755,7 @@ function ColorPicker({ onPick }: { onPick: (color: string) => void }) {
         className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5"
       >
         <Palette className="h-4 w-4" />
-        <span className="h-2 w-4 rounded-sm" style={{ background: custom }} />
+        <span className="h-3 w-4 rounded-sm border border-border" style={{ background: currentColor ?? custom }} />
       </button>
       {open && (
         <div className="absolute top-full left-0 mt-1 z-30 w-72 rounded-lg border border-border bg-popover shadow-lg p-4 animate-scale-in">
