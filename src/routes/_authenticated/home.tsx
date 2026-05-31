@@ -185,6 +185,23 @@ function HomePage() {
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
+                      const name = await prompt.ask({
+                        title: "Rename notebook",
+                        description: "Give this notebook a new name.",
+                        placeholder: "Notebook name",
+                        defaultValue: d.name,
+                        confirmLabel: "Rename",
+                      });
+                      if (name && name !== d.name) renameDir.mutate({ id: d.id, name });
+                    }}
+                    className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition hover:scale-110 active:scale-95"
+                    title="Rename"
+                  >
+                    <Pencil className="h-3.5 w-3.5 text-white" />
+                  </button>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
                       const ok = await prompt.ask({
                         title: `Delete "${d.name}"?`,
                         description: "This permanently removes the notebook and everything inside it.",
@@ -199,6 +216,7 @@ function HomePage() {
                   >
                     <Trash2 className="h-3.5 w-3.5 text-white" />
                   </button>
+
                 </div>
 
                 <div className="px-4 py-3 flex items-center justify-between text-xs text-muted-foreground mono border-t border-border">
