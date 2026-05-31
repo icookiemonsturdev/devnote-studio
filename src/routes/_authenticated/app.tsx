@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon,
+  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
