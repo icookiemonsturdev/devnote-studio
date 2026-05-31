@@ -173,11 +173,18 @@ function HomePage() {
                     onPick={(skinId) => setCover.mutate({ id: d.id, cover_skin: skinId })}
                   />
                   <button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      if (confirm(`Delete notebook "${d.name}"?`)) removeDir.mutate(d.id);
+                      const ok = await prompt.ask({
+                        title: `Delete "${d.name}"?`,
+                        description: "This permanently removes the notebook and everything inside it.",
+                        confirmOnly: true,
+                        destructive: true,
+                        confirmLabel: "Delete",
+                      });
+                      if (ok !== null) removeDir.mutate(d.id);
                     }}
-                    className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition"
+                    className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition hover:scale-110 active:scale-95"
                     title="Delete"
                   >
                     <Trash2 className="h-3.5 w-3.5 text-white" />
