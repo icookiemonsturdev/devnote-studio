@@ -117,8 +117,8 @@ function HomePage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-12">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold mb-2">Your notebooks</h1>
+        <div className="mb-10 animate-slide-up">
+          <h1 className="text-4xl font-bold mb-2 text-gradient-animated">Your notebooks</h1>
           <p className="text-sm text-muted-foreground">
             {dirs.length === 0
               ? "Create your first notebook to get started."
