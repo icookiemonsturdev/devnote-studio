@@ -554,10 +554,32 @@ function NoteEditor({
       document.execCommand("formatBlock", false, value);
       if (getCurrentBlockTag() === normalized) break;
     }
+    if (getCurrentBlockTag() !== normalized) replaceCurrentBlock(normalized);
     if (editorRef.current) setContent(editorRef.current.innerHTML);
     saveSelection();
     refreshActiveFormats();
     requestAnimationFrame(refreshActiveFormats);
+  }
+
+  function replaceCurrentBlock(tag: string) {
+    const root = editorRef.current;
+    const sel = window.getSelection();
+    if (!root || !sel?.anchorNode) return;
+    let node: Node | null = sel.anchorNode.nodeType === Node.TEXT_NODE ? sel.anchorNode.parentNode : sel.anchorNode;
+    while (node && node !== root) {
+      const name = (node as HTMLElement).tagName;
+      if (name && /^(H[1-6]|P|DIV|BLOCKQUOTE|PRE)$/i.test(name)) break;
+      node = node.parentNode;
+    }
+    if (!node || node === root) return;
+    const next = document.createElement(tag === "p" ? "p" : tag);
+    next.innerHTML = (node as HTMLElement).innerHTML || "<br>";
+    node.parentNode?.replaceChild(next, node);
+    const range = document.createRange();
+    range.selectNodeContents(next);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 
   function toggleQuote() {
