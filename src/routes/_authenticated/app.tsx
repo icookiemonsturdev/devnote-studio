@@ -691,14 +691,14 @@ function NoteEditor({
         onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
         onFocus={refreshActiveFormats}
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
-        className="prose-editor flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
+        className="prose-editor editor-paper flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
         style={{ fontFamily: editorBodyStack }}
       />
 
       <style>{`
         .prose-editor:empty:before {
           content: attr(data-placeholder);
-          color: hsl(var(--muted-foreground) / 0.7);
+          color: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
           pointer-events: none;
         }
         .prose-editor h1 { font-size: 1.875rem; font-weight: 700; margin: 0.75rem 0 0.5rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
