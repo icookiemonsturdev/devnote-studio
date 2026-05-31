@@ -722,9 +722,8 @@ function NoteEditor({
   }
 
   function insertChecklist() {
-    const id = `cl-${Math.random().toString(36).slice(2, 8)}`;
     insertHTML(
-      `<ul class="checklist" data-checklist="1"><li data-checked="false"><span class="check-box" contenteditable="false"></span><span class="check-text">${id ? "" : ""}New item</span></li></ul><p><br/></p>`,
+      `<ul class="checklist" data-checklist="1"><li data-checked="false"><span class="check-box" contenteditable="false"></span><span class="check-text">New item</span></li></ul><p><br/></p>`,
     );
   }
 
