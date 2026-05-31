@@ -134,7 +134,7 @@ function HomePage() {
               <div
                 key={d.id}
                 style={{ animationDelay: `${i * 60}ms` }}
-                className="notebook-card group relative rounded-xl overflow-hidden border border-border bg-card hover:border-primary/50 hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1.5 animate-fade-in"
+                className="notebook-card magnetic-card group relative rounded-xl overflow-hidden border border-border bg-card hover:border-primary/50 hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1.5 animate-fade-in"
               >
                 <button
                   onClick={() => navigate({ to: "/app", search: { dir: d.id } })}
@@ -187,7 +187,7 @@ function HomePage() {
 
           <button
             onClick={() => addDir.mutate()}
-            className="group rounded-xl border-2 border-dashed border-border hover:border-primary/60 hover:bg-primary/5 transition-all flex flex-col items-center justify-center aspect-[4/5] text-muted-foreground hover:text-primary"
+            className="group rounded-xl border-2 border-dashed border-border hover:border-primary/60 hover:bg-primary/5 transition-all flex flex-col items-center justify-center aspect-[4/5] text-muted-foreground hover:text-primary pulse-ring"
           >
             <Plus className="h-10 w-10 mb-2 group-hover:scale-110 transition-transform" />
             <span className="text-sm mono">new notebook</span>
@@ -245,7 +245,7 @@ function CoverPicker({
             Get more
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-8 max-h-[60vh] overflow-y-auto px-2 py-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-10 gap-y-12 max-h-[60vh] overflow-y-auto px-4 py-5">
           {NOTEBOOK_SKINS.map((s, idx) => {
             const owned = ownedSkinIds.has(s.id);
             const isActive = currentSkin === s.id;
@@ -256,7 +256,7 @@ function CoverPicker({
               <div
                 key={s.id}
                 style={{ animationDelay: `${idx * 40}ms` }}
-                className="flex flex-col items-center gap-2 animate-fade-in"
+                className="flex flex-col items-center gap-3 animate-fade-in min-w-0"
               >
                 <button
                   disabled={!owned}
@@ -265,7 +265,7 @@ function CoverPicker({
                     onPick(s.id);
                     setOpen(false);
                   }}
-                  className={`relative w-full aspect-[4/5] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                  className={`relative w-full max-w-36 aspect-[4/5] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                     isActive ? "border-primary shadow-glow" : "border-transparent hover:border-border"
                   } ${!owned ? "opacity-60 cursor-not-allowed" : "hover:scale-[1.06] hover:-translate-y-1 hover:shadow-glow"}`}
                   style={{ background: bg }}
