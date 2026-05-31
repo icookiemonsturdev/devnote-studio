@@ -469,11 +469,33 @@ function NoteEditor({
     return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
   }
 
+  function normalizeBlockTag(value: string): string {
+    const block = value.toLowerCase().replace(/[<>]/g, "").replace("heading ", "h");
+    return block === "div" ? "p" : block;
+  }
+
+  function getCurrentBlockTag(): string {
+    const sel = window.getSelection();
+    const root = editorRef.current;
+    let node = sel?.anchorNode ?? null;
+    if (!node || !root?.contains(node)) return currentBlock;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    while (node && node !== root) {
+      const tagName = (node as HTMLElement).tagName;
+      if (tagName) {
+        const tag = normalizeBlockTag(tagName);
+        if (/^(h[1-6]|p|blockquote|pre)$/.test(tag)) return tag;
+      }
+      node = node.parentNode;
+    }
+    const raw = String(document.queryCommandValue("formatBlock") || "p");
+    return normalizeBlockTag(raw);
+  }
+
   function refreshActiveFormats() {
     if (typeof document === "undefined") return;
     try {
-      const raw = String(document.queryCommandValue("formatBlock") || "").toLowerCase();
-      let block = raw.replace("heading ", "h");
+      let block = getCurrentBlockTag();
       if (!/^(h[1-6]|p|blockquote|pre)$/.test(block)) block = "p";
       setCurrentBlock(block);
       setActiveFormats({
@@ -518,12 +540,38 @@ function NoteEditor({
     requestAnimationFrame(refreshActiveFormats);
   }
 
+  function formatBlock(block: string) {
+    editorRef.current?.focus();
+    restoreSelection();
+    const normalized = normalizeBlockTag(block);
+    const values =
+      normalized === "blockquote" ? ["BLOCKQUOTE", "<blockquote>"] :
+      normalized === "pre" ? ["PRE", "<pre>"] :
+      normalized === "p" ? ["P", "<p>"] :
+      [normalized.toUpperCase(), `<${normalized}>`];
+
+    for (const value of values) {
+      document.execCommand("formatBlock", false, value);
+      if (getCurrentBlockTag() === normalized) break;
+    }
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+    saveSelection();
+    refreshActiveFormats();
+    requestAnimationFrame(refreshActiveFormats);
+  }
+
+  function toggleQuote() {
+    editorRef.current?.focus();
+    restoreSelection();
+    formatBlock(getCurrentBlockTag() === "blockquote" ? "p" : "blockquote");
+  }
+
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
     { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
-    { icon: Code, label: "Code", action: () => exec("formatBlock", currentBlock === "pre" ? "P" : "PRE"), activeKey: "pre" },
-    { icon: Quote, label: "Quote", action: () => exec("formatBlock", currentBlock === "blockquote" ? "P" : "BLOCKQUOTE"), activeKey: "blockquote" },
+    { icon: Code, label: "Code", action: () => formatBlock(getCurrentBlockTag() === "pre" ? "p" : "pre"), activeKey: "pre" },
+    { icon: Quote, label: "Quote", action: toggleQuote, activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
