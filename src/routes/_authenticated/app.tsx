@@ -710,6 +710,64 @@ function NoteEditor({
     sel.addRange(range);
   }
 
+  function insertHTML(html: string) {
+    if (document.activeElement !== editorRef.current) {
+      editorRef.current?.focus();
+      restoreSelection();
+    }
+    document.execCommand("insertHTML", false, html);
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+    saveSelection();
+    refreshActiveFormats();
+  }
+
+  function insertChecklist() {
+    const id = `cl-${Math.random().toString(36).slice(2, 8)}`;
+    insertHTML(
+      `<ul class="checklist" data-checklist="1"><li data-checked="false"><span class="check-box" contenteditable="false"></span><span class="check-text">${id ? "" : ""}New item</span></li></ul><p><br/></p>`,
+    );
+  }
+
+  function insertGrid(rows: number, cols: number) {
+    const rowsHtml = Array.from({ length: rows })
+      .map(
+        () =>
+          `<tr>${Array.from({ length: cols })
+            .map(() => `<td><br/></td>`)
+            .join("")}</tr>`,
+      )
+      .join("");
+    insertHTML(`<table class="grid-table"><tbody>${rowsHtml}</tbody></table><p><br/></p>`);
+  }
+
+  async function handleLink() {
+    saveSelection();
+    const url = await askLink();
+    if (!url) return;
+    const finalUrl = /^(https?:|mailto:|tel:|\/)/i.test(url) ? url : `https://${url}`;
+    exec("createLink", finalUrl);
+  }
+
+  async function handleGrid() {
+    saveSelection();
+    const dims = await askGrid();
+    if (!dims) return;
+    insertGrid(dims.rows, dims.cols);
+  }
+
+  // Toggle checkbox clicks inside the editor
+  function handleEditorClick(e: React.MouseEvent<HTMLDivElement>) {
+    const target = e.target as HTMLElement;
+    if (target.classList?.contains("check-box")) {
+      const li = target.closest("li");
+      if (li) {
+        const isChecked = li.getAttribute("data-checked") === "true";
+        li.setAttribute("data-checked", isChecked ? "false" : "true");
+        if (editorRef.current) setContent(editorRef.current.innerHTML);
+      }
+    }
+  }
+
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
@@ -717,14 +775,9 @@ function NoteEditor({
     { icon: Code, label: "Code", action: () => formatBlock(getCurrentBlockTag() === "pre" ? "p" : "pre"), activeKey: "pre" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
-    {
-      icon: LinkIcon,
-      label: "Link",
-      action: () => {
-        const url = window.prompt("URL");
-        if (url) exec("createLink", url);
-      },
-    },
+    { icon: CheckSquare, label: "Checklist", action: insertChecklist },
+    { icon: TableIcon, label: "Insert grid", action: handleGrid },
+    { icon: LinkIcon, label: "Link", action: handleLink },
   ];
 
   const BLOCK_OPTIONS: Array<{ value: string; label: string }> = [
