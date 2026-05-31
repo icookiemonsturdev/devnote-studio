@@ -469,11 +469,33 @@ function NoteEditor({
     return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
   }
 
+  function normalizeBlockTag(value: string): string {
+    const block = value.toLowerCase().replace(/[<>]/g, "").replace("heading ", "h");
+    return block === "div" ? "p" : block;
+  }
+
+  function getCurrentBlockTag(): string {
+    const sel = window.getSelection();
+    const root = editorRef.current;
+    let node = sel?.anchorNode ?? null;
+    if (!node || !root?.contains(node)) return currentBlock;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    while (node && node !== root) {
+      const tagName = (node as HTMLElement).tagName;
+      if (tagName) {
+        const tag = normalizeBlockTag(tagName);
+        if (/^(h[1-6]|p|blockquote|pre)$/.test(tag)) return tag;
+      }
+      node = node.parentNode;
+    }
+    const raw = String(document.queryCommandValue("formatBlock") || "p");
+    return normalizeBlockTag(raw);
+  }
+
   function refreshActiveFormats() {
     if (typeof document === "undefined") return;
     try {
-      const raw = String(document.queryCommandValue("formatBlock") || "").toLowerCase();
-      let block = raw.replace("heading ", "h");
+      let block = getCurrentBlockTag();
       if (!/^(h[1-6]|p|blockquote|pre)$/.test(block)) block = "p";
       setCurrentBlock(block);
       setActiveFormats({
@@ -518,12 +540,60 @@ function NoteEditor({
     requestAnimationFrame(refreshActiveFormats);
   }
 
+  function formatBlock(block: string) {
+    editorRef.current?.focus();
+    restoreSelection();
+    const normalized = normalizeBlockTag(block);
+    const values =
+      normalized === "blockquote" ? ["BLOCKQUOTE", "<blockquote>"] :
+      normalized === "pre" ? ["PRE", "<pre>"] :
+      normalized === "p" ? ["P", "<p>"] :
+      [normalized.toUpperCase(), `<${normalized}>`];
+
+    for (const value of values) {
+      document.execCommand("formatBlock", false, value);
+      if (getCurrentBlockTag() === normalized) break;
+    }
+    if (getCurrentBlockTag() !== normalized) replaceCurrentBlock(normalized);
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+    saveSelection();
+    refreshActiveFormats();
+    requestAnimationFrame(refreshActiveFormats);
+  }
+
+  function replaceCurrentBlock(tag: string) {
+    const root = editorRef.current;
+    const sel = window.getSelection();
+    if (!root || !sel?.anchorNode) return;
+    let node: Node | null = sel.anchorNode.nodeType === Node.TEXT_NODE ? sel.anchorNode.parentNode : sel.anchorNode;
+    while (node && node !== root) {
+      const name = (node as HTMLElement).tagName;
+      if (name && /^(H[1-6]|P|DIV|BLOCKQUOTE|PRE)$/i.test(name)) break;
+      node = node.parentNode;
+    }
+    if (!node || node === root) return;
+    const next = document.createElement(tag === "p" ? "p" : tag);
+    next.innerHTML = (node as HTMLElement).innerHTML || "<br>";
+    node.parentNode?.replaceChild(next, node);
+    const range = document.createRange();
+    range.selectNodeContents(next);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function toggleQuote() {
+    editorRef.current?.focus();
+    restoreSelection();
+    formatBlock(getCurrentBlockTag() === "blockquote" ? "p" : "blockquote");
+  }
+
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
     { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
-    { icon: Code, label: "Code", action: () => exec("formatBlock", currentBlock === "pre" ? "P" : "PRE"), activeKey: "pre" },
-    { icon: Quote, label: "Quote", action: () => exec("formatBlock", currentBlock === "blockquote" ? "P" : "BLOCKQUOTE"), activeKey: "blockquote" },
+    { icon: Code, label: "Code", action: () => formatBlock(getCurrentBlockTag() === "pre" ? "p" : "pre"), activeKey: "pre" },
+    { icon: Quote, label: "Quote", action: toggleQuote, activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
@@ -574,7 +644,7 @@ function NoteEditor({
         <select
           value={currentBlock.startsWith("h") || currentBlock === "p" ? currentBlock : "p"}
           onMouseDown={(e) => { saveSelection(); }}
-          onChange={(e) => exec("formatBlock", e.target.value === "p" ? "P" : e.target.value.toUpperCase())}
+          onChange={(e) => formatBlock(e.target.value)}
           className="h-8 rounded-md border border-border bg-background px-2 text-xs mono focus:outline-none focus:ring-1 focus:ring-ring hover:border-primary/60 transition cursor-pointer"
           title="Block type"
         >
@@ -643,24 +713,28 @@ function NoteEditor({
         onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
         onFocus={refreshActiveFormats}
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
-        className="prose-editor flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
+        className="prose-editor editor-paper flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
         style={{ fontFamily: editorBodyStack }}
       />
 
       <style>{`
         .prose-editor:empty:before {
           content: attr(data-placeholder);
-          color: hsl(var(--muted-foreground) / 0.7);
+          color: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
           pointer-events: none;
         }
         .prose-editor h1 { font-size: 1.875rem; font-weight: 700; margin: 0.75rem 0 0.5rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
-        .prose-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 0.75rem 0 0.5rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
+        .prose-editor h2 { font-size: 1.5rem; font-weight: 650; margin: 0.75rem 0 0.5rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
+        .prose-editor h3 { font-size: 1.25rem; font-weight: 650; margin: 0.7rem 0 0.45rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
+        .prose-editor h4 { font-size: 1.1rem; font-weight: 650; margin: 0.65rem 0 0.4rem; font-family: ${JSON.stringify(editorHeadingStack)}; }
+        .prose-editor h5 { font-size: 1rem; font-weight: 700; margin: 0.6rem 0 0.35rem; font-family: ${JSON.stringify(editorHeadingStack)}; text-transform: uppercase; letter-spacing: 0; }
+        .prose-editor h6 { font-size: 0.9rem; font-weight: 700; margin: 0.55rem 0 0.3rem; font-family: ${JSON.stringify(editorHeadingStack)}; opacity: 0.8; letter-spacing: 0; }
         .prose-editor ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
         .prose-editor li { margin: 0.15rem 0; }
-        .prose-editor blockquote { border-left: 3px solid hsl(var(--primary)); padding-left: 0.75rem; color: hsl(var(--muted-foreground)); margin: 0.5rem 0; }
-        .prose-editor pre { background: hsl(var(--muted)); padding: 0.75rem; border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.85em; overflow-x: auto; }
-        .prose-editor a { color: hsl(var(--primary)); text-decoration: underline; }
+        .prose-editor blockquote { border-left: 3px solid var(--primary); padding: 0.55rem 0.75rem; color: var(--muted-foreground); margin: 0.5rem 0; background: color-mix(in oklab, var(--primary) 8%, transparent); border-radius: 0 0.375rem 0.375rem 0; }
+        .prose-editor pre { background: var(--muted); padding: 0.75rem; border-radius: 0.375rem; font-family: ui-monospace, monospace; font-size: 0.85em; overflow-x: auto; }
+        .prose-editor a { color: var(--primary); text-decoration: underline; }
         .prose-editor p { margin: 0.25rem 0; }
       `}</style>
     </>

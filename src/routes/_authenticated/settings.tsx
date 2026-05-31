@@ -41,8 +41,8 @@ function SettingsPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-surface)" }}>
       <header className="container mx-auto px-6 py-6">
-        <Link to="/app" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to notes
+        <Link to="/home" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" /> Back to notebooks
         </Link>
       </header>
 

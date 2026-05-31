@@ -43,6 +43,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       skinId?: string;
       returnUrl: string;
       environment: StripeEnv;
+      theme?: {
+        backgroundColor?: string;
+        buttonColor?: string;
+      };
     }) => {
       if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
       return data;
@@ -77,6 +81,12 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       mode: isRecurring ? "subscription" : "payment",
       ui_mode: "embedded_page",
       return_url: data.returnUrl,
+      branding_settings: {
+        background_color: data.theme?.backgroundColor ?? "#0f1020",
+        button_color: data.theme?.buttonColor ?? "#7c3aed",
+        border_style: "rounded",
+        display_name: "dev_notes",
+      },
       customer: customerId,
       metadata: sessionMetadata,
       ...(!isRecurring && {

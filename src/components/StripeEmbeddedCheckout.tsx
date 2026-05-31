@@ -6,16 +6,21 @@ interface Props {
   priceId: string;
   skinId?: string;
   returnUrl?: string;
+  theme?: {
+    backgroundColor?: string;
+    buttonColor?: string;
+  };
 }
 
-export function StripeEmbeddedCheckout({ priceId, skinId, returnUrl }: Props) {
+export function StripeEmbeddedCheckout({ priceId, skinId, returnUrl, theme }: Props) {
   const fetchClientSecret = async (): Promise<string> => {
     const secret = await createCheckoutSession({
       data: {
         priceId,
         skinId,
-        returnUrl: returnUrl || `${window.location.origin}/skins?checkout=success`,
+        returnUrl: returnUrl || `${window.location.origin}/skins?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         environment: getStripeEnvironment(),
+        theme,
       },
     });
     if (!secret) throw new Error("Failed to create checkout session");
@@ -23,7 +28,7 @@ export function StripeEmbeddedCheckout({ priceId, skinId, returnUrl }: Props) {
   };
 
   return (
-    <div id="checkout">
+    <div id="checkout" className="rounded-xl bg-background p-2 checkout-shell">
       <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
         <EmbeddedCheckout />
       </EmbeddedCheckoutProvider>
