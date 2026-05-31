@@ -929,6 +929,7 @@ function NoteEditor({
         suppressContentEditableWarning
         onInput={(e) => { setContent((e.target as HTMLDivElement).innerHTML); refreshActiveFormats(); }}
         onBlur={saveSelection}
+        onKeyDown={handleEditorKeyDown}
         onKeyUp={() => { saveSelection(); refreshActiveFormats(); }}
         onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
         onClick={handleEditorClick}
