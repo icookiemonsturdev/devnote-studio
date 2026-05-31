@@ -741,32 +741,6 @@ function NoteEditor({
 }
 
 
-function FontSelect({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (id: string) => void;
-}) {
-  return (
-    <div>
-      <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-1.5">{label}</div>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-      >
-        {FONTS.map((f) => (
-          <option key={f.id} value={f.id} style={{ fontFamily: f.stack }}>
-            {f.name} ({f.category})
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 const PRESET_COLORS: Array<{ name: string; value: string }> = [
   { name: "Black", value: "#000000" },
