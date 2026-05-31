@@ -310,6 +310,7 @@ function AppPage() {
                               confirmOnly: true,
                               destructive: true,
                               confirmLabel: "Delete",
+                              skipKey: "delete-folder",
                             });
                             if (ok !== null) removeFolder.mutate(f.id);
                           }}
