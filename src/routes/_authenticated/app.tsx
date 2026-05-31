@@ -486,6 +486,29 @@ function AppPage() {
               headingFont={ws?.profile?.heading_font ?? "inter"}
               bodyFont={ws?.profile?.body_font ?? "inter"}
               onSave={(patch) => saveNote.mutate({ id: n.id, ...patch })}
+              askLink={() =>
+                prompt.ask({
+                  title: "Insert link",
+                  description: "Paste or type a URL. The selected text becomes a link.",
+                  placeholder: "https://example.com",
+                  confirmLabel: "Add link",
+                })
+              }
+              askGrid={async () => {
+                const raw = await prompt.ask({
+                  title: "Insert grid",
+                  description: "Enter dimensions as rows x columns (e.g. 3x4).",
+                  placeholder: "3x3",
+                  defaultValue: "3x3",
+                  confirmLabel: "Insert grid",
+                });
+                if (!raw) return null;
+                const m = raw.match(/^(\d+)\s*[x×*]\s*(\d+)$/i);
+                if (!m) return null;
+                const rows = Math.min(20, Math.max(1, parseInt(m[1], 10)));
+                const cols = Math.min(20, Math.max(1, parseInt(m[2], 10)));
+                return { rows, cols };
+              }}
               onDelete={async () => {
                 const ok = await prompt.ask({
                   title: "Delete this note?",
