@@ -50,7 +50,12 @@ export function usePromptDialog() {
   const confirmOnly = !!pending?.confirmOnly;
 
   const node = (
-    <Dialog open={!!pending} onOpenChange={(o) => { if (!o) close(null); }}>
+    <Dialog
+      open={!!pending}
+      onOpenChange={(o) => {
+        if (!o) close(null);
+      }}
+    >
       <DialogContent className="sm:max-w-md overflow-hidden border-primary/30 bg-popover/95 shadow-[var(--shadow-glow)] backdrop-blur-xl animate-scale-in">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-primary" />
         <DialogHeader className="pt-1">
@@ -61,7 +66,9 @@ export function usePromptDialog() {
             {pending?.title}
           </DialogTitle>
           {pending?.description && (
-            <DialogDescription className="pl-12 text-muted-foreground">{pending.description}</DialogDescription>
+            <DialogDescription className="pl-12 text-muted-foreground">
+              {pending.description}
+            </DialogDescription>
           )}
         </DialogHeader>
 
