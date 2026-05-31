@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Underline, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
+  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Type, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
@@ -15,6 +15,7 @@ import {
 } from "@/lib/notes.functions";
 import { FONTS, getFontStack } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
+import { usePromptDialog } from "@/components/PromptDialog";
 
 export const Route = createFileRoute("/_authenticated/app")({
   validateSearch: (s: Record<string, unknown>) => ({ dir: typeof s.dir === "string" ? s.dir : undefined }),
