@@ -452,30 +452,10 @@ function NoteEditor({
   onSave: (patch: { title?: string; content?: string }) => void;
   onDelete: () => void;
 }) {
-  const qc = useQueryClient();
-  const profileFn = useServerFn(updateProfile);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
-  const [showFontPicker, setShowFontPicker] = useState(false);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const savedSelectionRef = useRef<Range | null>(null);
-
-  const setFont = useMutation({
-    mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
-    onMutate: async (data) => {
-      await qc.cancelQueries({ queryKey: ["workspace"] });
-      const previousWorkspace = qc.getQueryData(["workspace"]);
-      qc.setQueryData<any>(["workspace"], (prev: any) =>
-        prev?.profile ? { ...prev, profile: { ...prev.profile, ...data } } : prev,
-      );
-      return { previousWorkspace };
-    },
-    onSuccess: () => { toast.success("Editor font updated"); },
-    onError: (e, _data, context) => {
-      if (context?.previousWorkspace) qc.setQueryData(["workspace"], context.previousWorkspace);
-      toast.error((e as Error).message);
-    },
-  });
 
   // Initialize editor HTML once per note
   useEffect(() => {
