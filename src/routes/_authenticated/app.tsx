@@ -381,21 +381,42 @@ function AppPage() {
             </div>
           )}
           {notesQuery.data?.map((n) => (
-            <button
+            <div
               key={n.id}
               onClick={() => setActiveNoteId(n.id)}
-              className={`w-full text-left px-4 py-3 border-b border-border hover:bg-muted/50 transition ${
+              className={`group relative w-full text-left px-4 py-3 border-b border-border hover:bg-muted/50 transition cursor-pointer ${
                 activeNoteId === n.id ? "bg-primary/10" : ""
               }`}
             >
-              <div className="font-medium text-sm truncate">{n.title || "Untitled"}</div>
-              <div className="text-xs text-muted-foreground truncate mt-0.5">
+              <div className="font-medium text-sm truncate pr-8">{n.title || "Untitled"}</div>
+              <div className="text-xs text-muted-foreground truncate mt-0.5 pr-8">
                 {(n.content?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 60)) || "Empty"}
               </div>
               <div className="text-[10px] text-muted-foreground mono mt-1">
                 {new Date(n.updated_at).toLocaleDateString()}
               </div>
-            </button>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  const ok = await prompt.ask({
+                    title: `Delete "${n.title || "Untitled"}"?`,
+                    description: "This permanently removes the note and its contents.",
+                    confirmOnly: true,
+                    destructive: true,
+                    confirmLabel: "Delete",
+                    skipKey: "delete-note",
+                  });
+                  if (ok !== null) {
+                    if (activeNoteId === n.id) setActiveNoteId(null);
+                    removeNote.mutate(n.id);
+                  }
+                }}
+                title="Delete note"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/20 hover:text-destructive transition active:scale-90"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           ))}
         </div>
       </div>
