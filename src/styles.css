@@ -127,6 +127,8 @@
 
 /* Premium skin: Matrix */
 [data-skin="matrix"] {
+  --font-heading: 'VT323', 'Share Tech Mono', ui-monospace, monospace;
+  --font-body: 'Share Tech Mono', 'JetBrains Mono', ui-monospace, monospace;
   --background: oklch(0.10 0.02 150);
   --foreground: oklch(0.95 0.05 150);
   --card: oklch(0.14 0.03 150);
