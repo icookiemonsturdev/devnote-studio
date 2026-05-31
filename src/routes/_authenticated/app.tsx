@@ -785,7 +785,7 @@ function NoteEditor({
       if (td && td.closest("table.grid-table")) {
         e.preventDefault();
         const cells = Array.from(td.closest("table.grid-table")!.querySelectorAll("td"));
-        const idx = cells.indexOf(td);
+        const idx = cells.indexOf(td as HTMLTableCellElement);
         const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
         const next = cells[nextIdx] as HTMLElement | undefined;
         if (next) {
