@@ -701,33 +701,6 @@ function NoteEditor({
         })}
         <div className="w-px h-5 bg-border mx-1" />
         <ColorPicker currentColor={currentColor} onPick={(color) => exec("foreColor", color)} />
-        <div className="w-px h-5 bg-border mx-1" />
-        <button
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setShowFontPicker((v) => !v)}
-          title="Editor font settings"
-          className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono hover:scale-105"
-        >
-          <Type className="h-4 w-4" /> Fonts
-        </button>
-
-        {showFontPicker && (
-          <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3 animate-scale-in">
-            <FontSelect
-              label="Heading font"
-              value={headingFont}
-              onChange={(id) => setFont.mutate({ heading_font: id })}
-            />
-            <FontSelect
-              label="Body font"
-              value={bodyFont}
-              onChange={(id) => setFont.mutate({ body_font: id })}
-            />
-            <p className="text-[10px] mono text-muted-foreground">
-              Applied to the editor only.
-            </p>
-          </div>
-        )}
       </div>
 
       <div
