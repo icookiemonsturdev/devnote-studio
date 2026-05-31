@@ -170,6 +170,8 @@
 }
 
 [data-skin="arctic"] {
+  --font-heading: 'Quicksand', ui-sans-serif, sans-serif;
+  --font-body: 'Quicksand', ui-sans-serif, sans-serif;
   --background: oklch(0.97 0.02 230); --foreground: oklch(0.20 0.05 230);
   --card: oklch(0.99 0.01 230); --card-foreground: oklch(0.20 0.05 230);
   --popover: oklch(0.99 0.01 230); --popover-foreground: oklch(0.20 0.05 230);
