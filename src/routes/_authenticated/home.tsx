@@ -225,7 +225,7 @@ function CoverPicker({
         </button>
       </DialogTrigger>
       <DialogContent
-        className="w-[min(94vw,48rem)] sm:max-w-2xl p-6 animate-scale-in"
+        className="w-[min(94vw,52rem)] sm:max-w-3xl p-6 animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <DialogHeader className="pr-8">
@@ -237,7 +237,7 @@ function CoverPicker({
             Choose a cover for this notebook from your available themes.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-1">
           <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground">
             Available covers
           </div>
@@ -245,42 +245,47 @@ function CoverPicker({
             Get more
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 max-h-[60vh] overflow-y-auto pr-1 py-1">
-          {NOTEBOOK_SKINS.map((s) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-8 max-h-[60vh] overflow-y-auto px-2 py-3">
+          {NOTEBOOK_SKINS.map((s, idx) => {
             const owned = ownedSkinIds.has(s.id);
             const isActive = currentSkin === s.id;
             const bg =
               s.cover ??
               "linear-gradient(135deg, hsl(244 70% 50%), hsl(20 85% 55%) 50%, hsl(150 60% 40%))";
             return (
-              <button
+              <div
                 key={s.id}
-                disabled={!owned}
-                onClick={() => {
-                  if (!owned) return;
-                  onPick(s.id);
-                  setOpen(false);
-                }}
-                className={`relative aspect-[4/5] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                  isActive ? "border-primary shadow-glow" : "border-transparent hover:border-border"
-                } ${!owned ? "opacity-50 cursor-not-allowed" : "hover:scale-[1.04] hover:-translate-y-0.5"}`}
-                style={{ background: bg }}
-                title={s.name + (owned ? "" : " (locked)")}
+                style={{ animationDelay: `${idx * 40}ms` }}
+                className="flex flex-col items-center gap-2 animate-fade-in"
               >
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                  <div className="text-[10px] mono text-white/90 truncate">{s.name}</div>
+                <button
+                  disabled={!owned}
+                  onClick={() => {
+                    if (!owned) return;
+                    onPick(s.id);
+                    setOpen(false);
+                  }}
+                  className={`relative w-full aspect-[4/5] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                    isActive ? "border-primary shadow-glow" : "border-transparent hover:border-border"
+                  } ${!owned ? "opacity-60 cursor-not-allowed" : "hover:scale-[1.06] hover:-translate-y-1 hover:shadow-glow"}`}
+                  style={{ background: bg }}
+                  title={s.name + (owned ? "" : " (locked)")}
+                >
+                  {isActive && (
+                    <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full p-0.5 shadow animate-scale-in">
+                      <Check className="h-3 w-3" />
+                    </div>
+                  )}
+                  {!owned && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[1px]">
+                      <Lock className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                </button>
+                <div className="text-[11px] mono text-center text-foreground truncate w-full px-1">
+                  {s.name}
                 </div>
-                {isActive && (
-                  <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full p-0.5 shadow">
-                    <Check className="h-3 w-3" />
-                  </div>
-                )}
-                {!owned && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[1px]">
-                    <Lock className="h-4 w-4 text-white" />
-                  </div>
-                )}
-              </button>
+              </div>
             );
           })}
         </div>
