@@ -594,25 +594,18 @@ function NoteEditor({
     sel.addRange(range);
   }
 
-  function toggleQuote() {
-    editorRef.current?.focus();
-    restoreSelection();
-    formatBlock(getCurrentBlockTag() === "blockquote" ? "p" : "blockquote");
-  }
-
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
     { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
     { icon: Code, label: "Code", action: () => formatBlock(getCurrentBlockTag() === "pre" ? "p" : "pre"), activeKey: "pre" },
-    { icon: Quote, label: "Quote", action: toggleQuote, activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
       icon: LinkIcon,
       label: "Link",
       action: () => {
-        const url = prompt("URL");
+        const url = window.prompt("URL");
         if (url) exec("createLink", url);
       },
     },
