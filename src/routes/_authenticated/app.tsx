@@ -179,10 +179,34 @@ function AppPage() {
                   <FolderPlus className="h-3.5 w-3.5" />
                 </button>
               </div>
+              <div className="px-2 pb-1">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                  <input
+                    type="text"
+                    value={folderSearch}
+                    onChange={(e) => setFolderSearch(e.target.value)}
+                    placeholder="Search folders"
+                    className="w-full pl-7 pr-7 py-1.5 text-xs rounded-md border border-sidebar-border bg-muted/40 text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary/60 focus:ring-1 focus:ring-primary/40"
+                  />
+                  {folderSearch && (
+                    <button
+                      onClick={() => setFolderSearch("")}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
+                      title="Clear"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
               {currentDirFolders.length === 0 && (
                 <div className="text-xs text-muted-foreground mono py-2 px-2">empty</div>
               )}
-              {currentDirFolders.map((f) => (
+              {currentDirFolders.length > 0 && visibleCurrentFolders.length === 0 && (
+                <div className="text-xs text-muted-foreground mono py-2 px-2">no matches</div>
+              )}
+              {visibleCurrentFolders.map((f) => (
                 <div
                   key={f.id}
                   className={`group flex items-center gap-1 py-1 px-2 rounded cursor-pointer transition ${
@@ -212,6 +236,7 @@ function AppPage() {
               ))}
             </div>
           )}
+
 
           {!dirParam && dirs.map((d) => {
             const open = expandedDirs.has(d.id);
