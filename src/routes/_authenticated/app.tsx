@@ -275,6 +275,7 @@ function AppPage() {
                         confirmOnly: true,
                         destructive: true,
                         confirmLabel: "Delete",
+                        skipKey: "delete-notebook",
                       });
                       if (ok !== null) removeDir.mutate(d.id);
                     }}
