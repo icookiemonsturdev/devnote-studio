@@ -212,6 +212,7 @@ function HomePage() {
           <div className="text-center py-12 text-sm text-muted-foreground mono">loading...</div>
         )}
       </main>
+      {prompt.node}
     </div>
   );
 }
