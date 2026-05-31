@@ -36,6 +36,7 @@ function AppPage() {
   const delNoteFn = useServerFn(deleteNote);
   const delFolderFn = useServerFn(deleteFolder);
   const delDirFn = useServerFn(deleteDirectory);
+  const prompt = usePromptDialog();
 
   const workspace = useQuery({ queryKey: ["workspace"], queryFn: () => wsFn() });
 
