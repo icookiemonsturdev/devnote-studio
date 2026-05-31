@@ -18,7 +18,7 @@ export function StripeEmbeddedCheckout({ priceId, skinId, returnUrl, theme }: Pr
       data: {
         priceId,
         skinId,
-        returnUrl: returnUrl || `${window.location.origin}/skins?checkout=success`,
+        returnUrl: returnUrl || `${window.location.origin}/skins?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         environment: getStripeEnvironment(),
         theme,
       },
