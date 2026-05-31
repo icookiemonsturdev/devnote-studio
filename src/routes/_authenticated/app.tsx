@@ -462,8 +462,14 @@ function NoteEditor({
 
   const setFont = useMutation({
     mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
+    onMutate: (data) => {
+      // Optimistically apply the new font so the editor updates immediately.
+      qc.setQueryData<any>(["workspace"], (prev: any) =>
+        prev?.profile ? { ...prev, profile: { ...prev.profile, ...data } } : prev,
+      );
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Editor font updated"); },
-    onError: (e) => toast.error((e as Error).message),
+    onError: (e) => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.error((e as Error).message); },
   });
 
   // Initialize editor HTML once per note
