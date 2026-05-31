@@ -154,6 +154,8 @@
 }
 
 [data-skin="noir"] {
+  --font-heading: 'Cinzel', ui-serif, serif;
+  --font-body: 'Cormorant Garamond', ui-serif, serif;
   --background: oklch(0.10 0.005 60); --foreground: oklch(0.95 0.02 80);
   --card: oklch(0.15 0.01 60); --card-foreground: oklch(0.95 0.02 80);
   --popover: oklch(0.15 0.01 60); --popover-foreground: oklch(0.95 0.02 80);
