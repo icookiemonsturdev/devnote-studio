@@ -767,6 +767,80 @@ function NoteEditor({
     }
   }
 
+  function handleEditorKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    let node: Node | null = sel.anchorNode;
+    const root = editorRef.current;
+    if (!root) return;
+
+    // Tab inside grid cell -> next cell
+    if (e.key === "Tab") {
+      let td: HTMLElement | null = null;
+      let n: Node | null = node;
+      while (n && n !== root) {
+        if ((n as HTMLElement).tagName === "TD") { td = n as HTMLElement; break; }
+        n = n.parentNode;
+      }
+      if (td && td.closest("table.grid-table")) {
+        e.preventDefault();
+        const cells = Array.from(td.closest("table.grid-table")!.querySelectorAll("td"));
+        const idx = cells.indexOf(td as HTMLTableCellElement);
+        const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
+        const next = cells[nextIdx] as HTMLElement | undefined;
+        if (next) {
+          const range = document.createRange();
+          range.selectNodeContents(next);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+        return;
+      }
+    }
+
+    // Enter inside a custom checklist -> insert a new checklist item
+    if (e.key === "Enter" && !e.shiftKey) {
+      let li: HTMLElement | null = null;
+      let n: Node | null = node;
+      while (n && n !== root) {
+        if ((n as HTMLElement).tagName === "LI") { li = n as HTMLElement; break; }
+        n = n.parentNode;
+      }
+      const ul = li?.parentElement;
+      if (li && ul && ul.classList.contains("checklist")) {
+        e.preventDefault();
+        const text = (li.querySelector(".check-text")?.textContent || "").trim();
+        if (text === "") {
+          // Exit the list
+          const p = document.createElement("p");
+          p.innerHTML = "<br>";
+          ul.parentNode?.insertBefore(p, ul.nextSibling);
+          li.remove();
+          if (ul.children.length === 0) ul.remove();
+          const range = document.createRange();
+          range.selectNodeContents(p);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } else {
+          const newLi = document.createElement("li");
+          newLi.setAttribute("data-checked", "false");
+          newLi.innerHTML = `<span class="check-box" contenteditable="false"></span><span class="check-text"><br></span>`;
+          li.parentNode?.insertBefore(newLi, li.nextSibling);
+          const range = document.createRange();
+          const target = newLi.querySelector(".check-text") as HTMLElement;
+          range.selectNodeContents(target);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+        if (editorRef.current) setContent(editorRef.current.innerHTML);
+        return;
+      }
+    }
+  }
+
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
@@ -855,6 +929,7 @@ function NoteEditor({
         suppressContentEditableWarning
         onInput={(e) => { setContent((e.target as HTMLDivElement).innerHTML); refreshActiveFormats(); }}
         onBlur={saveSelection}
+        onKeyDown={handleEditorKeyDown}
         onKeyUp={() => { saveSelection(); refreshActiveFormats(); }}
         onMouseUp={() => { saveSelection(); refreshActiveFormats(); }}
         onClick={handleEditorClick}
