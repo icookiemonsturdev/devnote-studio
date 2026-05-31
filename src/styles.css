@@ -172,18 +172,19 @@
 [data-skin="arctic"] {
   --font-heading: 'Quicksand', ui-sans-serif, sans-serif;
   --font-body: 'Quicksand', ui-sans-serif, sans-serif;
-  --background: oklch(0.97 0.02 230); --foreground: oklch(0.20 0.05 230);
-  --card: oklch(0.99 0.01 230); --card-foreground: oklch(0.20 0.05 230);
-  --popover: oklch(0.99 0.01 230); --popover-foreground: oklch(0.20 0.05 230);
-  --primary: oklch(0.55 0.15 230); --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.92 0.03 230); --secondary-foreground: oklch(0.20 0.05 230);
-  --muted: oklch(0.94 0.02 230); --muted-foreground: oklch(0.45 0.05 230);
-  --accent: oklch(0.75 0.10 230); --accent-foreground: oklch(0.15 0.05 230);
-  --border: oklch(0.88 0.03 230); --input: oklch(0.92 0.02 230); --ring: oklch(0.55 0.15 230);
-  --sidebar: oklch(0.94 0.03 230); --sidebar-foreground: oklch(0.20 0.05 230); --sidebar-border: oklch(0.85 0.04 230);
-  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.15 230), oklch(0.70 0.12 220));
-  --shadow-glow: 0 0 40px -8px oklch(0.55 0.15 230 / 0.4);
+  --background: oklch(0.96 0.02 230); --foreground: oklch(0.18 0.06 250);
+  --card: oklch(0.99 0.01 230); --card-foreground: oklch(0.18 0.06 250);
+  --popover: oklch(0.99 0.01 230); --popover-foreground: oklch(0.18 0.06 250);
+  --primary: oklch(0.42 0.18 245); --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.90 0.04 230); --secondary-foreground: oklch(0.18 0.06 250);
+  --muted: oklch(0.92 0.03 230); --muted-foreground: oklch(0.32 0.06 245);
+  --accent: oklch(0.60 0.14 235); --accent-foreground: oklch(0.99 0 0);
+  --border: oklch(0.82 0.04 230); --input: oklch(0.90 0.03 230); --ring: oklch(0.42 0.18 245);
+  --sidebar: oklch(0.34 0.10 250); --sidebar-foreground: oklch(0.97 0.02 230); --sidebar-border: oklch(0.42 0.10 245);
+  --gradient-primary: linear-gradient(135deg, oklch(0.42 0.18 245), oklch(0.60 0.14 220));
+  --shadow-glow: 0 0 40px -8px oklch(0.42 0.18 245 / 0.4);
 }
+
 
 [data-skin="terracotta"] {
   --font-heading: 'Special Elite', 'Lora', ui-serif, serif;
@@ -204,18 +205,19 @@
 [data-skin="sakura"] {
   --font-heading: 'Caveat', 'Instrument Serif', ui-serif, serif;
   --font-body: 'Quicksand', ui-sans-serif, sans-serif;
-  --background: oklch(0.98 0.01 350); --foreground: oklch(0.25 0.04 350);
-  --card: oklch(1 0 0); --card-foreground: oklch(0.25 0.04 350);
-  --popover: oklch(1 0 0); --popover-foreground: oklch(0.25 0.04 350);
-  --primary: oklch(0.70 0.15 350); --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.03 350); --secondary-foreground: oklch(0.25 0.04 350);
-  --muted: oklch(0.96 0.02 350); --muted-foreground: oklch(0.50 0.05 350);
-  --accent: oklch(0.85 0.08 350); --accent-foreground: oklch(0.25 0.04 350);
-  --border: oklch(0.90 0.03 350); --input: oklch(0.95 0.03 350); --ring: oklch(0.70 0.15 350);
-  --sidebar: oklch(0.96 0.02 350); --sidebar-foreground: oklch(0.25 0.04 350); --sidebar-border: oklch(0.88 0.04 350);
-  --gradient-primary: linear-gradient(135deg, oklch(0.70 0.15 350), oklch(0.80 0.12 320));
-  --shadow-glow: 0 0 40px -8px oklch(0.70 0.15 350 / 0.4);
+  --background: oklch(0.97 0.02 350); --foreground: oklch(0.22 0.06 350);
+  --card: oklch(1 0 0); --card-foreground: oklch(0.22 0.06 350);
+  --popover: oklch(1 0 0); --popover-foreground: oklch(0.22 0.06 350);
+  --primary: oklch(0.58 0.20 350); --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.93 0.04 350); --secondary-foreground: oklch(0.22 0.06 350);
+  --muted: oklch(0.95 0.03 350); --muted-foreground: oklch(0.38 0.08 350);
+  --accent: oklch(0.72 0.14 350); --accent-foreground: oklch(0.15 0.04 350);
+  --border: oklch(0.86 0.05 350); --input: oklch(0.93 0.04 350); --ring: oklch(0.58 0.20 350);
+  --sidebar: oklch(0.38 0.12 350); --sidebar-foreground: oklch(0.98 0.02 350); --sidebar-border: oklch(0.48 0.12 350);
+  --gradient-primary: linear-gradient(135deg, oklch(0.58 0.20 350), oklch(0.70 0.16 320));
+  --shadow-glow: 0 0 40px -8px oklch(0.58 0.20 350 / 0.4);
 }
+
 
 [data-skin="ember"] {
   --font-heading: 'Russo One', 'Bebas Neue', ui-sans-serif, sans-serif;
@@ -451,36 +453,73 @@
   50%      { opacity: 0.85; transform: translateY(-6px) scale(1.04); }
 }
 @keyframes skin-stars-twinkle {
-  0%, 100% { opacity: 0.6; }
+  0%, 100% { opacity: 0.55; }
   50%      { opacity: 1; }
 }
-@keyframes skin-petals {
-  0%   { background-position: 0px 0px, 200px 100px, 80px 300px; }
-  100% { background-position: 0px 800px, 200px 900px, 80px 1100px; }
+@keyframes skin-moon-glow {
+  0%, 100% { opacity: 0.85; filter: blur(0px); }
+  50%      { opacity: 1; filter: blur(0.5px); }
 }
-@keyframes skin-snow {
-  0%   { background-position: 0 0, 50px 0, 120px 0; }
-  100% { background-position: 0 600px, 50px 700px, 120px 800px; }
+@keyframes skin-petals-fall {
+  0%   { transform: translate3d(0, -10vh, 0) rotate(0deg); }
+  100% { transform: translate3d(-40px, 110vh, 0) rotate(360deg); }
+}
+@keyframes skin-snow-blow {
+  0%   { transform: translate3d(0, -10vh, 0); }
+  50%  { transform: translate3d(-80px, 55vh, 0); }
+  100% { transform: translate3d(80px, 115vh, 0); }
+}
+@keyframes skin-snow-blow-2 {
+  0%   { transform: translate3d(0, -10vh, 0); }
+  50%  { transform: translate3d(120px, 50vh, 0); }
+  100% { transform: translate3d(-60px, 115vh, 0); }
+}
+@keyframes skin-matrix-rain {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
 }
 @keyframes skin-noir-shimmer {
   0%, 100% { opacity: 0.10; }
   50%      { opacity: 0.22; }
 }
+@keyframes skin-ember-flicker {
+  0%, 100% { opacity: 0.7; transform: translateY(0) scale(1); }
+  25%      { opacity: 0.95; transform: translateY(-3px) scale(1.03); }
+  50%      { opacity: 0.6; transform: translateY(2px) scale(0.98); }
+  75%      { opacity: 1; transform: translateY(-5px) scale(1.05); }
+}
+@keyframes skin-spark-rise {
+  0%   { transform: translate3d(0, 110vh, 0) scale(0.6); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate3d(20px, -10vh, 0) scale(1.2); opacity: 0; }
+}
 
-/* ---------- Midnight: starfield ---------- */
+/* ---------- Midnight: moon + moonlight + twinkling stars ---------- */
 [data-skin="midnight"] body::before {
   background:
-    radial-gradient(1px 1px at 20% 30%, #ffffff 99%, transparent),
-    radial-gradient(1px 1px at 70% 80%, #c4b5fd 99%, transparent),
-    radial-gradient(1px 1px at 40% 70%, #a5b4fc 99%, transparent),
-    radial-gradient(2px 2px at 85% 20%, #ffffff 99%, transparent),
-    radial-gradient(1px 1px at 10% 90%, #ddd6fe 99%, transparent);
-  background-size: 600px 600px;
-  opacity: 0.5;
-  animation: skin-stars-twinkle 4s ease-in-out infinite;
+    /* tiny twinkling stars (varied sizes) */
+    radial-gradient(1.5px 1.5px at 12% 18%, #ffffff, transparent 60%),
+    radial-gradient(2px 2px at 28% 42%, #e0e7ff, transparent 60%),
+    radial-gradient(1px 1px at 45% 12%, #ffffff, transparent 60%),
+    radial-gradient(2.5px 2.5px at 62% 28%, #ffffff, transparent 60%),
+    radial-gradient(1px 1px at 78% 55%, #c4b5fd, transparent 60%),
+    radial-gradient(1.5px 1.5px at 88% 72%, #ffffff, transparent 60%),
+    radial-gradient(2px 2px at 8%  78%, #ddd6fe, transparent 60%),
+    radial-gradient(1px 1px at 35% 88%, #ffffff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 55% 68%, #a5b4fc, transparent 60%),
+    radial-gradient(1px 1px at 92% 38%, #ffffff, transparent 60%);
+  opacity: 0.9;
+  animation: skin-stars-twinkle 3.5s ease-in-out infinite;
 }
 [data-skin="midnight"] body::after {
-  background: radial-gradient(ellipse at 50% -10%, oklch(0.62 0.22 275 / 0.25), transparent 60%);
+  background:
+    /* the moon */
+    radial-gradient(circle 70px at 82% 14%, #f5f3ff 0%, #e0e7ff 40%, transparent 70%),
+    /* moonlight halo */
+    radial-gradient(circle 280px at 82% 14%, oklch(0.85 0.08 270 / 0.18), transparent 70%),
+    /* soft moonlight wash from top-right */
+    radial-gradient(ellipse 80% 60% at 82% 14%, oklch(0.75 0.10 270 / 0.10), transparent 70%);
+  animation: skin-moon-glow 6s ease-in-out infinite;
 }
 
 /* ---------- Aurora: animated aurora ribbons ---------- */
@@ -505,28 +544,59 @@
   background: linear-gradient(180deg, transparent 60%, oklch(0.20 0.06 350 / 0.4));
 }
 
-/* ---------- Matrix: scanlines + raining glyphs (CSS approx) ---------- */
+/* ---------- Matrix: vertical glyph rain in discrete columns ---------- */
 [data-skin="matrix"] body::before {
+  /* faint scanlines */
   background:
     repeating-linear-gradient(
       0deg,
-      rgba(0,0,0,0) 0px,
-      rgba(0,0,0,0) 2px,
-      rgba(0, 255, 120, 0.06) 2px,
-      rgba(0, 255, 120, 0.06) 3px
+      transparent 0 2px,
+      rgba(0, 255, 120, 0.05) 2px 3px
     );
   animation: skin-flicker 3s steps(8) infinite;
 }
 [data-skin="matrix"] body::after {
-  background:
-    linear-gradient(180deg, transparent, oklch(0.78 0.22 145 / 0.12) 50%, transparent),
-    repeating-linear-gradient(90deg,
-      transparent 0 30px,
-      oklch(0.78 0.22 145 / 0.08) 30px 31px);
-  background-size: 100% 200%, 100% 100%;
-  animation: skin-scan 6s linear infinite;
+  /* falling columns of glyphs via repeating linear-gradient masked by a moving vertical strip */
+  background-image:
+    /* column 1 */
+    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.9) 5%, oklch(0.55 0.18 145 / 0.4) 20%, transparent 40%),
+    /* column 2 */
+    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.7) 4%, oklch(0.55 0.18 145 / 0.3) 18%, transparent 35%),
+    /* column 3 */
+    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.85) 3%, oklch(0.55 0.18 145 / 0.35) 22%, transparent 42%),
+    /* column 4 */
+    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.6) 6%, oklch(0.55 0.18 145 / 0.25) 25%, transparent 48%),
+    /* column 5 */
+    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.95) 4%, oklch(0.55 0.18 145 / 0.4) 19%, transparent 38%),
+    /* column 6 */
+    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.7) 5%, oklch(0.55 0.18 145 / 0.3) 21%, transparent 40%),
+    /* column 7 */
+    linear-gradient(180deg, transparent 0%, oklch(0.78 0.22 145 / 0.8) 4%, oklch(0.55 0.18 145 / 0.32) 23%, transparent 44%);
+  background-repeat: no-repeat;
+  background-size:
+    14px 70vh, 14px 55vh, 14px 80vh, 14px 45vh,
+    14px 65vh, 14px 50vh, 14px 75vh;
+  background-position:
+    8%  -70vh, 19% -30vh, 31% -90vh, 44% -10vh,
+    58% -60vh, 73% -40vh, 87% -80vh;
+  animation:
+    matrix-col-1 4.5s linear infinite,
+    matrix-col-2 6.2s linear infinite,
+    matrix-col-3 3.8s linear infinite,
+    matrix-col-4 7.4s linear infinite,
+    matrix-col-5 5.1s linear infinite,
+    matrix-col-6 4.2s linear infinite,
+    matrix-col-7 6.8s linear infinite;
   mix-blend-mode: screen;
+  opacity: 0.9;
 }
+@keyframes matrix-col-1 { to { background-position: 8% 120vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
+@keyframes matrix-col-2 { to { background-position: 8% -70vh,  19% 120vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
+@keyframes matrix-col-3 { to { background-position: 8% -70vh,  19% -30vh, 31% 120vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
+@keyframes matrix-col-4 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% 120vh, 58% -60vh, 73% -40vh, 87% -80vh; } }
+@keyframes matrix-col-5 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% 120vh, 73% -40vh, 87% -80vh; } }
+@keyframes matrix-col-6 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% 120vh, 87% -80vh; } }
+@keyframes matrix-col-7 { to { background-position: 8% -70vh,  19% -30vh, 31% -90vh, 44% -10vh, 58% -60vh, 73% -40vh, 87% 120vh; } }
 [data-skin="matrix"] * { text-shadow: 0 0 1px currentColor; }
 
 /* ---------- Noir: gold film grain + vignette ---------- */
@@ -542,60 +612,120 @@
   animation: skin-noir-shimmer 5s ease-in-out infinite;
 }
 
-/* ---------- Arctic: falling snow ---------- */
+/* ---------- Arctic: turbulent windblown snow ---------- */
 [data-skin="arctic"] body::before {
-  background:
-    radial-gradient(2px 2px at 20% 10%, #ffffff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 60% 30%, #ffffff 99%, transparent),
-    radial-gradient(2px 2px at 80% 60%, #ffffff 99%, transparent);
-  background-size: 200px 600px, 250px 700px, 300px 800px;
-  opacity: 0.7;
-  animation: skin-snow 20s linear infinite;
+  background-image:
+    radial-gradient(2.5px 2.5px at 10% 5%,  #ffffff, transparent 60%),
+    radial-gradient(2px 2px   at 25% 18%, #ffffff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 42% 8%,  #ffffff, transparent 60%),
+    radial-gradient(3px 3px   at 60% 22%, #ffffff, transparent 60%),
+    radial-gradient(2px 2px   at 78% 12%, #ffffff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 92% 28%, #ffffff, transparent 60%),
+    radial-gradient(2.5px 2.5px at 15% 38%, #ffffff, transparent 60%),
+    radial-gradient(1px 1px   at 55% 48%, #ffffff, transparent 60%),
+    radial-gradient(2px 2px   at 82% 60%, #ffffff, transparent 60%);
+  background-repeat: repeat;
+  background-size: 100% 100%;
+  opacity: 0.95;
+  animation: skin-snow-blow 5s linear infinite;
+  filter: blur(0.4px);
 }
 [data-skin="arctic"] body::after {
-  background:
-    linear-gradient(180deg, oklch(0.85 0.04 230 / 0.4), transparent 30%),
-    radial-gradient(ellipse at 50% 100%, oklch(0.55 0.15 230 / 0.15), transparent 60%);
+  background-image:
+    radial-gradient(1.5px 1.5px at 5% 10%,  #ffffff, transparent 60%),
+    radial-gradient(2px 2px   at 32% 30%, #ffffff, transparent 60%),
+    radial-gradient(1px 1px   at 48% 55%, #ffffff, transparent 60%),
+    radial-gradient(2.5px 2.5px at 70% 18%, #ffffff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 88% 70%, #ffffff, transparent 60%),
+    radial-gradient(1px 1px   at 22% 80%, #ffffff, transparent 60%),
+    /* cold wash + bottom drift */
+    linear-gradient(180deg, oklch(0.85 0.04 230 / 0.35), transparent 25%),
+    radial-gradient(ellipse at 50% 100%, oklch(0.55 0.15 230 / 0.18), transparent 60%);
+  background-repeat: repeat, repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat;
+  opacity: 0.9;
+  animation: skin-snow-blow-2 7s linear infinite;
+  filter: blur(0.6px);
 }
 
-/* ---------- Terracotta: clay paper grain ---------- */
+/* ---------- Terracotta: warm desert sun + dunes + handcraft grain ---------- */
 [data-skin="terracotta"] body::before {
   background:
-    radial-gradient(ellipse at 30% 20%, oklch(0.65 0.18 40 / 0.25), transparent 50%),
-    radial-gradient(ellipse at 70% 80%, oklch(0.65 0.10 140 / 0.18), transparent 50%);
+    /* desert sun */
+    radial-gradient(circle 120px at 18% 22%, oklch(0.78 0.18 50 / 0.6), oklch(0.68 0.18 40 / 0.25) 60%, transparent 75%),
+    /* warm sky wash */
+    radial-gradient(ellipse 90% 50% at 50% 0%, oklch(0.55 0.14 35 / 0.35), transparent 70%),
+    /* sage horizon */
+    radial-gradient(ellipse 100% 30% at 50% 75%, oklch(0.45 0.10 140 / 0.25), transparent 80%);
 }
 [data-skin="terracotta"] body::after {
-  background-image:
-    repeating-radial-gradient(circle at 30% 40%,
-      rgba(255, 200, 150, 0.04) 0 1px, transparent 1px 3px),
-    repeating-radial-gradient(circle at 70% 60%,
-      rgba(100, 60, 30, 0.05) 0 1px, transparent 1px 4px);
-  background-size: 6px 6px, 8px 8px;
+  /* layered dune silhouettes + woven grain */
+  background:
+    /* far dune */
+    radial-gradient(ellipse 90% 28% at 30% 88%, oklch(0.35 0.10 35) 0%, oklch(0.35 0.10 35) 50%, transparent 51%),
+    /* near dune */
+    radial-gradient(ellipse 110% 22% at 70% 96%, oklch(0.25 0.08 30) 0%, oklch(0.25 0.08 30) 55%, transparent 56%),
+    /* woven thread grain */
+    repeating-linear-gradient(45deg,
+      rgba(180, 110, 70, 0.05) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(-45deg,
+      rgba(80, 40, 20, 0.04) 0 2px, transparent 2px 6px);
 }
 
-/* ---------- Sakura: drifting petals ---------- */
+/* ---------- Sakura: drifting petals + tree silhouettes ---------- */
 [data-skin="sakura"] body::before {
-  background:
-    radial-gradient(ellipse 4px 6px at 20% 10%, #f8c8d8 90%, transparent),
-    radial-gradient(ellipse 3px 5px at 70% 30%, #f9a8d4 90%, transparent),
-    radial-gradient(ellipse 5px 7px at 40% 60%, #fce7f3 90%, transparent);
-  background-size: 400px 800px, 500px 900px, 600px 1100px;
-  opacity: 0.7;
-  animation: skin-petals 25s linear infinite;
+  /* falling petal shapes */
+  background-image:
+    radial-gradient(ellipse 6px 9px at 10% -5%, #f9a8d4 90%, transparent 70%),
+    radial-gradient(ellipse 5px 8px at 28% -8%, #f8c8d8 90%, transparent 70%),
+    radial-gradient(ellipse 7px 10px at 45% -3%, #fce7f3 90%, transparent 70%),
+    radial-gradient(ellipse 5px 8px at 62% -6%, #f9a8d4 90%, transparent 70%),
+    radial-gradient(ellipse 6px 9px at 78% -4%, #f8c8d8 90%, transparent 70%),
+    radial-gradient(ellipse 4px 7px at 92% -7%, #fce7f3 90%, transparent 70%);
+  background-repeat: repeat;
+  background-size: 100% 100%;
+  opacity: 0.85;
+  animation: skin-petals-fall 9s linear infinite;
 }
 [data-skin="sakura"] body::after {
-  background: radial-gradient(ellipse at 50% 0%, oklch(0.70 0.15 350 / 0.18), transparent 60%);
+  /* sakura tree silhouettes at the bottom corners */
+  background:
+    /* left tree trunk + canopy */
+    radial-gradient(ellipse 180px 90px at 8% 92%, oklch(0.78 0.14 350 / 0.55), transparent 70%),
+    radial-gradient(ellipse 140px 70px at 14% 86%, oklch(0.82 0.12 340 / 0.45), transparent 70%),
+    radial-gradient(ellipse 14px 80px at 10% 100%, oklch(0.30 0.05 30 / 0.75), transparent 70%),
+    /* right tree */
+    radial-gradient(ellipse 200px 100px at 92% 94%, oklch(0.76 0.16 350 / 0.55), transparent 70%),
+    radial-gradient(ellipse 150px 80px at 86% 88%, oklch(0.82 0.12 340 / 0.45), transparent 70%),
+    radial-gradient(ellipse 14px 90px at 90% 100%, oklch(0.30 0.05 30 / 0.75), transparent 70%),
+    /* soft top wash */
+    radial-gradient(ellipse at 50% 0%, oklch(0.70 0.15 350 / 0.18), transparent 60%);
 }
 
-/* ---------- Ember: glowing embers rising from bottom ---------- */
+/* ---------- Ember: fireplace warmth + flickering flames + rising sparks ---------- */
 [data-skin="ember"] body::before {
+  /* fireplace glow at bottom */
   background:
-    radial-gradient(circle at 20% 95%, oklch(0.68 0.20 30 / 0.35), transparent 30%),
-    radial-gradient(circle at 60% 100%, oklch(0.68 0.20 30 / 0.45), transparent 35%),
-    radial-gradient(circle at 85% 90%, oklch(0.70 0.22 40 / 0.30), transparent 30%);
-  animation: skin-ember-pulse 4s ease-in-out infinite;
-  filter: blur(8px);
+    radial-gradient(ellipse 50% 35% at 50% 105%, oklch(0.82 0.22 55 / 0.7), oklch(0.68 0.22 30 / 0.5) 35%, transparent 70%),
+    radial-gradient(ellipse 30% 25% at 25% 100%, oklch(0.75 0.22 40 / 0.55), transparent 65%),
+    radial-gradient(ellipse 30% 25% at 75% 100%, oklch(0.75 0.22 35 / 0.55), transparent 65%),
+    /* warm room wash from below */
+    linear-gradient(180deg, transparent 30%, oklch(0.40 0.15 30 / 0.18) 80%, oklch(0.55 0.18 25 / 0.30));
+  animation: skin-ember-flicker 2.2s ease-in-out infinite;
+  filter: blur(6px);
 }
 [data-skin="ember"] body::after {
-  background: linear-gradient(180deg, transparent 50%, oklch(0.68 0.20 30 / 0.10));
+  /* rising sparks */
+  background-image:
+    radial-gradient(1.5px 1.5px at 22% 100%, oklch(0.90 0.22 60), transparent 70%),
+    radial-gradient(2px 2px   at 38% 100%, oklch(0.85 0.22 50), transparent 70%),
+    radial-gradient(1px 1px   at 52% 100%, oklch(0.90 0.22 55), transparent 70%),
+    radial-gradient(1.5px 1.5px at 65% 100%, oklch(0.82 0.22 40), transparent 70%),
+    radial-gradient(2px 2px   at 78% 100%, oklch(0.88 0.22 50), transparent 70%),
+    radial-gradient(1px 1px   at 88% 100%, oklch(0.90 0.22 60), transparent 70%);
+  background-repeat: repeat;
+  background-size: 100% 100%;
+  animation: skin-spark-rise 6s linear infinite;
+  mix-blend-mode: screen;
+  opacity: 0.85;
 }
+
