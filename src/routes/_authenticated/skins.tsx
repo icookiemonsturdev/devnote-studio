@@ -41,8 +41,6 @@ function SkinsPage() {
   const profile: any = ws.data?.profile;
   const active = (profile?.active_skin as SkinId) ?? "midnight";
   const activeNotebook: string = profile?.active_notebook_skin ?? "nb_default";
-  const headingFont: string = profile?.heading_font ?? "inter";
-  const bodyFont: string = profile?.body_font ?? "inter";
 
   const [checkoutPrice, setCheckoutPrice] = useState<{ priceId: string; skinId?: string } | null>(null);
 
