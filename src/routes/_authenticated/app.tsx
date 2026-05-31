@@ -151,18 +151,6 @@ function AppPage() {
             <FileCode2 className="h-5 w-5 text-primary" />
             <span className="mono text-sm font-semibold text-sidebar-foreground">dev_notes</span>
           </Link>
-          <div className="flex items-center gap-1">
-            <Link to="/home" title="All notebooks" className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition">
-              <Home className="h-4 w-4" />
-            </Link>
-            <button
-              onClick={() => addDir.mutate()}
-              title="New notebook"
-              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
-            >
-              <FolderTree className="h-4 w-4" />
-            </button>
-          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2">
