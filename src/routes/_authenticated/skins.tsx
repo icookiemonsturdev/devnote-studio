@@ -232,25 +232,13 @@ function SkinsPage() {
           </TabsContent>
         </Tabs>
 
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mono uppercase tracking-wider mb-4">Typography</h2>
-          <p className="text-sm text-muted-foreground mb-6">Free for everyone — pick a heading and body font for your workspace.</p>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <FontPicker
-              label="Heading font"
-              selected={headingFont}
-              onSelect={(id) => setFont.mutate({ heading_font: id })}
-              sample="The quick brown fox"
-              isHeading
-            />
-            <FontPicker
-              label="Body font"
-              selected={bodyFont}
-              onSelect={(id) => setFont.mutate({ body_font: id })}
-              sample="The quick brown fox jumps over the lazy dog."
-            />
-          </div>
+        <section className="rounded-xl border border-border bg-card/50 p-5 text-center">
+          <p className="text-sm text-muted-foreground">
+            Looking to change editor fonts?{" "}
+            <Link to="/settings" className="text-primary hover:underline font-medium">
+              Manage typography in Settings
+            </Link>
+          </p>
         </section>
       </main>
 
