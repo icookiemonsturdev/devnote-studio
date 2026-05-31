@@ -774,30 +774,49 @@ function NoteEditor({
     const root = editorRef.current;
     if (!node || !root) return;
 
-    // Tab inside grid cell -> next cell
-    if (e.key === "Tab") {
+    // Tab / Backspace navigation inside grid cells
+    if (e.key === "Tab" || e.key === "Backspace") {
       const anchorEl: Element | null =
         node.nodeType === 1 ? (node as Element) : (node.parentElement as Element | null);
       const td = anchorEl?.closest("td") as HTMLTableCellElement | null;
       const table = td?.closest("table.grid-table") as HTMLTableElement | null;
       if (td && table) {
-        e.preventDefault();
-        e.stopPropagation();
         const cells = Array.from(table.querySelectorAll("td")) as HTMLTableCellElement[];
         const idx = cells.indexOf(td);
-        const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
-        const next = cells[nextIdx];
-        if (next) {
-          next.focus();
-          const range = document.createRange();
-          range.selectNodeContents(next);
-          range.collapse(false);
-          sel.removeAllRanges();
-          sel.addRange(range);
+
+        if (e.key === "Tab") {
+          e.preventDefault();
+          e.stopPropagation();
+          const next = cells[e.shiftKey ? idx - 1 : idx + 1];
+          if (next) {
+            next.focus();
+            const range = document.createRange();
+            range.selectNodeContents(next);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+          return;
         }
-        return;
+
+        // Backspace on an empty cell -> jump to previous cell
+        if (e.key === "Backspace" && (td.textContent || "").length === 0) {
+          const prev = cells[idx - 1];
+          if (prev) {
+            e.preventDefault();
+            e.stopPropagation();
+            prev.focus();
+            const range = document.createRange();
+            range.selectNodeContents(prev);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            return;
+          }
+        }
       }
     }
+
 
     // Enter inside a custom checklist -> insert a new checklist item
     if (e.key === "Enter" && !e.shiftKey) {
