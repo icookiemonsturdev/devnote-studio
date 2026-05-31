@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Type, Palette,
+  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
   createDirectory, createFolder, createNote,
-  updateNote, deleteNote, deleteFolder, deleteDirectory, updateProfile,
+  updateNote, deleteNote, deleteFolder, deleteDirectory,
 } from "@/lib/notes.functions";
-import { FONTS, getFontStack } from "@/lib/catalog";
+import { getFontStack } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { usePromptDialog } from "@/components/PromptDialog";
 
@@ -452,30 +452,10 @@ function NoteEditor({
   onSave: (patch: { title?: string; content?: string }) => void;
   onDelete: () => void;
 }) {
-  const qc = useQueryClient();
-  const profileFn = useServerFn(updateProfile);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
-  const [showFontPicker, setShowFontPicker] = useState(false);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const savedSelectionRef = useRef<Range | null>(null);
-
-  const setFont = useMutation({
-    mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
-    onMutate: async (data) => {
-      await qc.cancelQueries({ queryKey: ["workspace"] });
-      const previousWorkspace = qc.getQueryData(["workspace"]);
-      qc.setQueryData<any>(["workspace"], (prev: any) =>
-        prev?.profile ? { ...prev, profile: { ...prev.profile, ...data } } : prev,
-      );
-      return { previousWorkspace };
-    },
-    onSuccess: () => { toast.success("Editor font updated"); },
-    onError: (e, _data, context) => {
-      if (context?.previousWorkspace) qc.setQueryData(["workspace"], context.previousWorkspace);
-      toast.error((e as Error).message);
-    },
-  });
 
   // Initialize editor HTML once per note
   useEffect(() => {
@@ -721,33 +701,6 @@ function NoteEditor({
         })}
         <div className="w-px h-5 bg-border mx-1" />
         <ColorPicker currentColor={currentColor} onPick={(color) => exec("foreColor", color)} />
-        <div className="w-px h-5 bg-border mx-1" />
-        <button
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setShowFontPicker((v) => !v)}
-          title="Editor font settings"
-          className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 text-xs mono hover:scale-105"
-        >
-          <Type className="h-4 w-4" /> Fonts
-        </button>
-
-        {showFontPicker && (
-          <div className="absolute top-full right-8 mt-1 z-20 w-80 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-3 animate-scale-in">
-            <FontSelect
-              label="Heading font"
-              value={headingFont}
-              onChange={(id) => setFont.mutate({ heading_font: id })}
-            />
-            <FontSelect
-              label="Body font"
-              value={bodyFont}
-              onChange={(id) => setFont.mutate({ body_font: id })}
-            />
-            <p className="text-[10px] mono text-muted-foreground">
-              Applied to the editor only.
-            </p>
-          </div>
-        )}
       </div>
 
       <div
@@ -788,32 +741,6 @@ function NoteEditor({
 }
 
 
-function FontSelect({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (id: string) => void;
-}) {
-  return (
-    <div>
-      <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-1.5">{label}</div>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-      >
-        {FONTS.map((f) => (
-          <option key={f.id} value={f.id} style={{ fontFamily: f.stack }}>
-            {f.name} ({f.category})
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 const PRESET_COLORS: Array<{ name: string; value: string }> = [
   { name: "Black", value: "#000000" },

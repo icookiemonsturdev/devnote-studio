@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Lock, Sparkles, X, Crown, BookOpen, Palette, ShieldCheck, Zap } from "lucide-react";
 import { getWorkspace, updateProfile } from "@/lib/notes.functions";
-import { SKINS, NOTEBOOK_SKINS, ALL_SKINS_PRICE_ID, FONTS, type SkinId } from "@/lib/catalog";
+import { SKINS, NOTEBOOK_SKINS, ALL_SKINS_PRICE_ID, type SkinId } from "@/lib/catalog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -41,8 +41,6 @@ function SkinsPage() {
   const profile: any = ws.data?.profile;
   const active = (profile?.active_skin as SkinId) ?? "midnight";
   const activeNotebook: string = profile?.active_notebook_skin ?? "nb_default";
-  const headingFont: string = profile?.heading_font ?? "inter";
-  const bodyFont: string = profile?.body_font ?? "inter";
 
   const [checkoutPrice, setCheckoutPrice] = useState<{ priceId: string; skinId?: string } | null>(null);
 
@@ -70,11 +68,6 @@ function SkinsPage() {
     onError: (e) => toast.error((e as Error).message),
   });
 
-  const setFont = useMutation({
-    mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Font updated"); },
-    onError: (e) => toast.error((e as Error).message),
-  });
 
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-surface)" }}>
@@ -239,25 +232,13 @@ function SkinsPage() {
           </TabsContent>
         </Tabs>
 
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mono uppercase tracking-wider mb-4">Typography</h2>
-          <p className="text-sm text-muted-foreground mb-6">Free for everyone — pick a heading and body font for your workspace.</p>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <FontPicker
-              label="Heading font"
-              selected={headingFont}
-              onSelect={(id) => setFont.mutate({ heading_font: id })}
-              sample="The quick brown fox"
-              isHeading
-            />
-            <FontPicker
-              label="Body font"
-              selected={bodyFont}
-              onSelect={(id) => setFont.mutate({ body_font: id })}
-              sample="The quick brown fox jumps over the lazy dog."
-            />
-          </div>
+        <section className="rounded-xl border border-border bg-card/50 p-5 text-center">
+          <p className="text-sm text-muted-foreground">
+            Looking to change editor fonts?{" "}
+            <Link to="/settings" className="text-primary hover:underline font-medium">
+              Manage typography in Settings
+            </Link>
+          </p>
         </section>
       </main>
 
@@ -335,46 +316,3 @@ function SkinsPage() {
   );
 }
 
-function FontPicker({
-  label,
-  selected,
-  onSelect,
-  sample,
-  isHeading,
-}: {
-  label: string;
-  selected: string;
-  onSelect: (id: string) => void;
-  sample: string;
-  isHeading?: boolean;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <div className="text-xs mono uppercase tracking-wider text-muted-foreground mb-3">{label}</div>
-      <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
-        {FONTS.map((f) => {
-          const active = selected === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => onSelect(f.id)}
-              className={`w-full text-left px-3 py-2.5 rounded-md border transition flex items-center justify-between gap-3 ${
-                active
-                  ? "border-primary bg-primary/10"
-                  : "border-transparent hover:border-border hover:bg-muted/50"
-              }`}
-            >
-              <span
-                className={isHeading ? "text-lg" : "text-sm"}
-                style={{ fontFamily: f.stack }}
-              >
-                {sample}
-              </span>
-              <span className="text-[10px] mono text-muted-foreground shrink-0">{f.name}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
