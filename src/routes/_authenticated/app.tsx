@@ -45,6 +45,7 @@ function AppPage() {
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [folderSearch, setFolderSearch] = useState("");
+  const [noteSearch, setNoteSearch] = useState("");
 
   // Auto-expand directory passed via ?dir= and select its first folder
   useEffect(() => {
