@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  BookOpen, Plus, Settings, Sparkles, LogOut, FileCode2, Trash2, Palette, Check, Lock, Pencil,
+  Plus, Settings, Sparkles, LogOut, FileCode2, Trash2, Palette, Check, Lock, Pencil,
 } from "lucide-react";
 import { getWorkspace, createDirectory, deleteDirectory, updateDirectory } from "@/lib/notes.functions";
 import { NOTEBOOK_SKINS } from "@/lib/catalog";
