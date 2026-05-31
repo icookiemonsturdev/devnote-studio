@@ -535,12 +535,16 @@ function NoteEditor({
   bodyFont,
   onSave,
   onDelete,
+  askLink,
+  askGrid,
 }: {
   note: { id: string; title: string; content: string };
   headingFont: string;
   bodyFont: string;
   onSave: (patch: { title?: string; content?: string }) => void;
   onDelete: () => void;
+  askLink: () => Promise<string | null>;
+  askGrid: () => Promise<{ rows: number; cols: number } | null>;
 }) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
