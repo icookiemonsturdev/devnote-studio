@@ -755,7 +755,7 @@ function ColorPicker({ onPick, currentColor }: { onPick: (color: string) => void
         className="p-2 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition flex items-center gap-1.5"
       >
         <Palette className="h-4 w-4" />
-        <span className="h-2 w-4 rounded-sm" style={{ background: custom }} />
+        <span className="h-3 w-4 rounded-sm border border-border" style={{ background: currentColor ?? custom }} />
       </button>
       {open && (
         <div className="absolute top-full left-0 mt-1 z-30 w-72 rounded-lg border border-border bg-popover shadow-lg p-4 animate-scale-in">
