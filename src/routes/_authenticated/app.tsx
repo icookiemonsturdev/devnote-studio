@@ -764,7 +764,7 @@ function ColorPicker({ onPick, currentColor }: { onPick: (color: string) => void
           <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">
             Text color
           </div>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center flex-wrap gap-2 mb-4">
             {PRESET_COLORS.map((c) => (
               <button
                 key={c.value}
