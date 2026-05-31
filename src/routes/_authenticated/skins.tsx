@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Lock, Sparkles, X, Crown, BookOpen, Palette, ShieldCheck, Zap } from "lucide-react";
 import { getWorkspace, updateProfile } from "@/lib/notes.functions";
-import { SKINS, NOTEBOOK_SKINS, ALL_SKINS_PRICE_ID, FONTS, type SkinId } from "@/lib/catalog";
+import { SKINS, NOTEBOOK_SKINS, ALL_SKINS_PRICE_ID, type SkinId } from "@/lib/catalog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
