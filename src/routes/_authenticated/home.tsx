@@ -34,6 +34,7 @@ function HomePage() {
   const newDirFn = useServerFn(createDirectory);
   const delDirFn = useServerFn(deleteDirectory);
   const updateDirFn = useServerFn(updateDirectory);
+  const prompt = usePromptDialog();
 
   const workspace = useQuery({ queryKey: ["workspace"], queryFn: () => wsFn() });
 
@@ -44,7 +45,12 @@ function HomePage() {
 
   const addDir = useMutation({
     mutationFn: async () => {
-      const name = prompt("Notebook name");
+      const name = await prompt.ask({
+        title: "New notebook",
+        description: "Give your notebook a memorable name.",
+        placeholder: "e.g. Research, Side project, Journal…",
+        confirmLabel: "Create notebook",
+      });
       if (!name) return null;
       const defaultSkin = workspace.data?.profile?.active_notebook_skin ?? "nb_default";
       return newDirFn({ data: { name, coverSkin: defaultSkin } });
