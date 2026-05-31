@@ -10,6 +10,7 @@ import { getWorkspace, createDirectory, deleteDirectory, updateDirectory } from 
 import { NOTEBOOK_SKINS } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { usePromptDialog } from "@/components/PromptDialog";
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: HomePage,
@@ -33,6 +34,7 @@ function HomePage() {
   const newDirFn = useServerFn(createDirectory);
   const delDirFn = useServerFn(deleteDirectory);
   const updateDirFn = useServerFn(updateDirectory);
+  const prompt = usePromptDialog();
 
   const workspace = useQuery({ queryKey: ["workspace"], queryFn: () => wsFn() });
 
@@ -43,7 +45,12 @@ function HomePage() {
 
   const addDir = useMutation({
     mutationFn: async () => {
-      const name = prompt("Notebook name");
+      const name = await prompt.ask({
+        title: "New notebook",
+        description: "Give your notebook a memorable name.",
+        placeholder: "e.g. Research, Side project, Journal…",
+        confirmLabel: "Create notebook",
+      });
       if (!name) return null;
       const defaultSkin = workspace.data?.profile?.active_notebook_skin ?? "nb_default";
       return newDirFn({ data: { name, coverSkin: defaultSkin } });
@@ -166,11 +173,18 @@ function HomePage() {
                     onPick={(skinId) => setCover.mutate({ id: d.id, cover_skin: skinId })}
                   />
                   <button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      if (confirm(`Delete notebook "${d.name}"?`)) removeDir.mutate(d.id);
+                      const ok = await prompt.ask({
+                        title: `Delete "${d.name}"?`,
+                        description: "This permanently removes the notebook and everything inside it.",
+                        confirmOnly: true,
+                        destructive: true,
+                        confirmLabel: "Delete",
+                      });
+                      if (ok !== null) removeDir.mutate(d.id);
                     }}
-                    className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition"
+                    className="p-1.5 rounded bg-black/40 hover:bg-black/60 backdrop-blur-sm transition hover:scale-110 active:scale-95"
                     title="Delete"
                   >
                     <Trash2 className="h-3.5 w-3.5 text-white" />
@@ -198,6 +212,7 @@ function HomePage() {
           <div className="text-center py-12 text-sm text-muted-foreground mono">loading...</div>
         )}
       </main>
+      {prompt.node}
     </div>
   );
 }

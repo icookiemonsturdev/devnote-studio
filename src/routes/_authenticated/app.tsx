@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Underline, List, ListOrdered, Quote, Code, Link as LinkIcon, Type, Palette,
+  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Type, Palette,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
@@ -15,6 +15,7 @@ import {
 } from "@/lib/notes.functions";
 import { FONTS, getFontStack } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
+import { usePromptDialog } from "@/components/PromptDialog";
 
 export const Route = createFileRoute("/_authenticated/app")({
   validateSearch: (s: Record<string, unknown>) => ({ dir: typeof s.dir === "string" ? s.dir : undefined }),
@@ -35,6 +36,7 @@ function AppPage() {
   const delNoteFn = useServerFn(deleteNote);
   const delFolderFn = useServerFn(deleteFolder);
   const delDirFn = useServerFn(deleteDirectory);
+  const prompt = usePromptDialog();
 
   const workspace = useQuery({ queryKey: ["workspace"], queryFn: () => wsFn() });
 
@@ -78,7 +80,12 @@ function AppPage() {
 
   const addDir = useMutation({
     mutationFn: async () => {
-      const name = prompt("Directory name");
+      const name = await prompt.ask({
+        title: "New notebook",
+        description: "Give your notebook a memorable name.",
+        placeholder: "e.g. Research, Side project, Journal…",
+        confirmLabel: "Create notebook",
+      });
       if (!name) return null;
       return newDirFn({ data: { name } });
     },
@@ -88,7 +95,12 @@ function AppPage() {
 
   const addFolder = useMutation({
     mutationFn: async (directoryId: string) => {
-      const name = prompt("Folder name");
+      const name = await prompt.ask({
+        title: "New folder",
+        description: "Folders group related notes together.",
+        placeholder: "Folder name",
+        confirmLabel: "Create folder",
+      });
       if (!name) return null;
       return newFolderFn({ data: { name, directoryId } });
     },
@@ -205,11 +217,18 @@ function AppPage() {
                   <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="text-sm truncate flex-1">{f.name}</span>
                   <button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      if (confirm(`Delete folder "${f.name}"?`)) removeFolder.mutate(f.id);
+                      const ok = await prompt.ask({
+                        title: `Delete "${f.name}"?`,
+                        description: "This permanently removes the folder and all its notes.",
+                        confirmOnly: true,
+                        destructive: true,
+                        confirmLabel: "Delete",
+                      });
+                      if (ok !== null) removeFolder.mutate(f.id);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded transition active:scale-90"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -247,9 +266,18 @@ function AppPage() {
                     <FolderPlus className="h-3 w-3" />
                   </button>
                   <button
-                    onClick={() => confirm(`Delete "${d.name}" and everything inside?`) && removeDir.mutate(d.id)}
+                    onClick={async () => {
+                      const ok = await prompt.ask({
+                        title: `Delete "${d.name}"?`,
+                        description: "This permanently removes the notebook and everything inside it.",
+                        confirmOnly: true,
+                        destructive: true,
+                        confirmLabel: "Delete",
+                      });
+                      if (ok !== null) removeDir.mutate(d.id);
+                    }}
                     title="Delete"
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded transition"
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded transition active:scale-90"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -271,11 +299,18 @@ function AppPage() {
                         <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="text-sm truncate flex-1">{f.name}</span>
                         <button
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            if (confirm(`Delete folder "${f.name}"?`)) removeFolder.mutate(f.id);
+                            const ok = await prompt.ask({
+                              title: `Delete "${f.name}"?`,
+                              description: "This permanently removes the folder and all its notes.",
+                              confirmOnly: true,
+                              destructive: true,
+                              confirmLabel: "Delete",
+                            });
+                            if (ok !== null) removeFolder.mutate(f.id);
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded"
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded active:scale-90"
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
@@ -385,11 +420,21 @@ function AppPage() {
               headingFont={ws?.profile?.heading_font ?? "inter"}
               bodyFont={ws?.profile?.body_font ?? "inter"}
               onSave={(patch) => saveNote.mutate({ id: n.id, ...patch })}
-              onDelete={() => confirm("Delete this note?") && removeNote.mutate(n.id)}
+              onDelete={async () => {
+                const ok = await prompt.ask({
+                  title: "Delete this note?",
+                  description: "This permanently removes the note and its contents.",
+                  confirmOnly: true,
+                  destructive: true,
+                  confirmLabel: "Delete note",
+                });
+                if (ok !== null) removeNote.mutate(n.id);
+              }}
             />
           );
         })()}
       </main>
+      {prompt.node}
     </div>
   );
 }
@@ -417,8 +462,14 @@ function NoteEditor({
 
   const setFont = useMutation({
     mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
+    onMutate: (data) => {
+      // Optimistically apply the new font so the editor updates immediately.
+      qc.setQueryData<any>(["workspace"], (prev: any) =>
+        prev?.profile ? { ...prev, profile: { ...prev.profile, ...data } } : prev,
+      );
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Editor font updated"); },
-    onError: (e) => toast.error((e as Error).message),
+    onError: (e) => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.error((e as Error).message); },
   });
 
   // Initialize editor HTML once per note
@@ -582,25 +633,18 @@ function NoteEditor({
     sel.addRange(range);
   }
 
-  function toggleQuote() {
-    editorRef.current?.focus();
-    restoreSelection();
-    formatBlock(getCurrentBlockTag() === "blockquote" ? "p" : "blockquote");
-  }
-
   const tools: Array<{ icon: any; label: string; action: () => void; activeKey?: string }> = [
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
     { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
     { icon: Code, label: "Code", action: () => formatBlock(getCurrentBlockTag() === "pre" ? "p" : "pre"), activeKey: "pre" },
-    { icon: Quote, label: "Quote", action: toggleQuote, activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
       icon: LinkIcon,
       label: "Link",
       action: () => {
-        const url = prompt("URL");
+        const url = window.prompt("URL");
         if (url) exec("createLink", url);
       },
     },
