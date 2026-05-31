@@ -14,7 +14,7 @@ export function StripeEmbeddedCheckout({ priceId, skinId, returnUrl }: Props) {
       data: {
         priceId,
         skinId,
-        returnUrl: returnUrl || `${window.location.origin}/app/skins?checkout=success`,
+        returnUrl: returnUrl || `${window.location.origin}/skins?checkout=success`,
         environment: getStripeEnvironment(),
       },
     });
