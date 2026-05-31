@@ -29,7 +29,7 @@ function AppPage() {
   const notesFn = useServerFn(getNotesByFolder);
   const noteFn = useServerFn(getNote);
 
-  const newDirFn = useServerFn(createDirectory);
+  
   const newFolderFn = useServerFn(createFolder);
   const newNoteFn = useServerFn(createNote);
   const saveNoteFn = useServerFn(updateNote);
