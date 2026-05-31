@@ -1,7 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Bebas+Neue&family=Abril+Fatface&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Bebas+Neue&family=Abril+Fatface&family=Share+Tech+Mono&family=VT323&family=Cinzel:wght@500;700&family=Cormorant+Garamond:wght@500;600;700&family=Caveat:wght@500;700&family=Quicksand:wght@500;600;700&family=Orbitron:wght@500;700&family=Audiowide&family=Special+Elite&family=Russo+One&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,6 +39,8 @@
 :root,
 [data-skin="midnight"] {
   --radius: 0.625rem;
+  --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --background: oklch(0.13 0.04 270);
   --foreground: oklch(0.96 0.01 260);
   --card: oklch(0.18 0.05 270);
@@ -69,6 +71,8 @@
 
 /* Premium skin: Aurora */
 [data-skin="aurora"] {
+  --font-heading: 'Outfit', ui-sans-serif, sans-serif;
+  --font-body: 'Manrope', ui-sans-serif, sans-serif;
   --background: oklch(0.14 0.03 200);
   --foreground: oklch(0.97 0.01 180);
   --card: oklch(0.19 0.04 200);
@@ -95,6 +99,8 @@
 
 /* Premium skin: Sunset */
 [data-skin="sunset"] {
+  --font-heading: 'Abril Fatface', ui-serif, serif;
+  --font-body: 'DM Sans', ui-sans-serif, sans-serif;
   --background: oklch(0.14 0.03 30);
   --foreground: oklch(0.97 0.02 60);
   --card: oklch(0.19 0.04 30);
@@ -121,6 +127,8 @@
 
 /* Premium skin: Matrix */
 [data-skin="matrix"] {
+  --font-heading: 'VT323', 'Share Tech Mono', ui-monospace, monospace;
+  --font-body: 'Share Tech Mono', 'JetBrains Mono', ui-monospace, monospace;
   --background: oklch(0.10 0.02 150);
   --foreground: oklch(0.95 0.05 150);
   --card: oklch(0.14 0.03 150);
@@ -146,6 +154,8 @@
 }
 
 [data-skin="noir"] {
+  --font-heading: 'Cinzel', ui-serif, serif;
+  --font-body: 'Cormorant Garamond', ui-serif, serif;
   --background: oklch(0.10 0.005 60); --foreground: oklch(0.95 0.02 80);
   --card: oklch(0.15 0.01 60); --card-foreground: oklch(0.95 0.02 80);
   --popover: oklch(0.15 0.01 60); --popover-foreground: oklch(0.95 0.02 80);
@@ -160,6 +170,8 @@
 }
 
 [data-skin="arctic"] {
+  --font-heading: 'Quicksand', ui-sans-serif, sans-serif;
+  --font-body: 'Quicksand', ui-sans-serif, sans-serif;
   --background: oklch(0.97 0.02 230); --foreground: oklch(0.20 0.05 230);
   --card: oklch(0.99 0.01 230); --card-foreground: oklch(0.20 0.05 230);
   --popover: oklch(0.99 0.01 230); --popover-foreground: oklch(0.20 0.05 230);
@@ -174,6 +186,8 @@
 }
 
 [data-skin="terracotta"] {
+  --font-heading: 'Special Elite', 'Lora', ui-serif, serif;
+  --font-body: 'Lora', ui-serif, serif;
   --background: oklch(0.18 0.04 40); --foreground: oklch(0.95 0.03 60);
   --card: oklch(0.23 0.05 40); --card-foreground: oklch(0.95 0.03 60);
   --popover: oklch(0.23 0.05 40); --popover-foreground: oklch(0.95 0.03 60);
@@ -188,6 +202,8 @@
 }
 
 [data-skin="sakura"] {
+  --font-heading: 'Caveat', 'Instrument Serif', ui-serif, serif;
+  --font-body: 'Quicksand', ui-sans-serif, sans-serif;
   --background: oklch(0.98 0.01 350); --foreground: oklch(0.25 0.04 350);
   --card: oklch(1 0 0); --card-foreground: oklch(0.25 0.04 350);
   --popover: oklch(1 0 0); --popover-foreground: oklch(0.25 0.04 350);
@@ -202,6 +218,8 @@
 }
 
 [data-skin="ember"] {
+  --font-heading: 'Russo One', 'Bebas Neue', ui-sans-serif, sans-serif;
+  --font-body: 'IBM Plex Mono', ui-monospace, monospace;
   --background: oklch(0.15 0.01 30); --foreground: oklch(0.96 0.02 50);
   --card: oklch(0.20 0.02 30); --card-foreground: oklch(0.96 0.02 50);
   --popover: oklch(0.20 0.02 30); --popover-foreground: oklch(0.96 0.02 50);
@@ -215,10 +233,6 @@
   --shadow-glow: 0 0 40px -8px oklch(0.68 0.20 30 / 0.45);
 }
 
-:root {
-  --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
-}
 
 @layer base {
   * { border-color: var(--color-border); }

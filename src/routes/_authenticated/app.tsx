@@ -770,25 +770,25 @@ function NoteEditor({
   function handleEditorKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
-    let node: Node | null = sel.anchorNode;
+    const node: Node | null = sel.anchorNode;
     const root = editorRef.current;
-    if (!root) return;
+    if (!node || !root) return;
 
     // Tab inside grid cell -> next cell
     if (e.key === "Tab") {
-      let td: HTMLElement | null = null;
-      let n: Node | null = node;
-      while (n && n !== root) {
-        if ((n as HTMLElement).tagName === "TD") { td = n as HTMLElement; break; }
-        n = n.parentNode;
-      }
-      if (td && td.closest("table.grid-table")) {
+      const anchorEl: Element | null =
+        node.nodeType === 1 ? (node as Element) : (node.parentElement as Element | null);
+      const td = anchorEl?.closest("td") as HTMLTableCellElement | null;
+      const table = td?.closest("table.grid-table") as HTMLTableElement | null;
+      if (td && table) {
         e.preventDefault();
-        const cells = Array.from(td.closest("table.grid-table")!.querySelectorAll("td"));
-        const idx = cells.indexOf(td as HTMLTableCellElement);
+        e.stopPropagation();
+        const cells = Array.from(table.querySelectorAll("td")) as HTMLTableCellElement[];
+        const idx = cells.indexOf(td);
         const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
-        const next = cells[nextIdx] as HTMLElement | undefined;
+        const next = cells[nextIdx];
         if (next) {
+          next.focus();
           const range = document.createRange();
           range.selectNodeContents(next);
           range.collapse(false);
