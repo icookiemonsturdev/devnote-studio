@@ -68,11 +68,6 @@ function SkinsPage() {
     onError: (e) => toast.error((e as Error).message),
   });
 
-  const setFont = useMutation({
-    mutationFn: (data: { heading_font?: string; body_font?: string }) => profileFn({ data }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["workspace"] }); toast.success("Font updated"); },
-    onError: (e) => toast.error((e as Error).message),
-  });
 
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-surface)" }}>
