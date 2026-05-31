@@ -28,7 +28,7 @@ export function StripeEmbeddedCheckout({ priceId, skinId, returnUrl, theme }: Pr
   };
 
   return (
-    <div id="checkout">
+    <div id="checkout" className="rounded-xl bg-background p-2 checkout-shell">
       <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
         <EmbeddedCheckout />
       </EmbeddedCheckoutProvider>
