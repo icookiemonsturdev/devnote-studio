@@ -770,9 +770,9 @@ function NoteEditor({
   function handleEditorKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
-    let node: Node | null = sel.anchorNode;
+    const node: Node | null = sel.anchorNode;
     const root = editorRef.current;
-    if (!root) return;
+    if (!node || !root) return;
 
     // Tab inside grid cell -> next cell
     if (e.key === "Tab") {
