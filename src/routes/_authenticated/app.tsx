@@ -522,8 +522,8 @@ function NoteEditor({
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
     { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
-    { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE"), activeKey: "pre" },
-    { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE"), activeKey: "blockquote" },
+    { icon: Code, label: "Code", action: () => exec("formatBlock", currentBlock === "pre" ? "P" : "PRE"), activeKey: "pre" },
+    { icon: Quote, label: "Quote", action: () => exec("formatBlock", currentBlock === "blockquote" ? "P" : "BLOCKQUOTE"), activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
@@ -696,6 +696,8 @@ function FontSelect({
 }
 
 const PRESET_COLORS: Array<{ name: string; value: string }> = [
+  { name: "Black", value: "#000000" },
+  { name: "White", value: "#ffffff" },
   { name: "Red", value: "#ef4444" },
   { name: "Blue", value: "#3b82f6" },
   { name: "Green", value: "#10b981" },
@@ -762,7 +764,7 @@ function ColorPicker({ onPick, currentColor }: { onPick: (color: string) => void
           <div className="text-[10px] mono uppercase tracking-wider text-muted-foreground mb-2">
             Text color
           </div>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center flex-wrap gap-2 mb-4">
             {PRESET_COLORS.map((c) => (
               <button
                 key={c.value}
