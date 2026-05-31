@@ -202,6 +202,8 @@
 }
 
 [data-skin="sakura"] {
+  --font-heading: 'Caveat', 'Instrument Serif', ui-serif, serif;
+  --font-body: 'Quicksand', ui-sans-serif, sans-serif;
   --background: oklch(0.98 0.01 350); --foreground: oklch(0.25 0.04 350);
   --card: oklch(1 0 0); --card-foreground: oklch(0.25 0.04 350);
   --popover: oklch(1 0 0); --popover-foreground: oklch(0.25 0.04 350);
