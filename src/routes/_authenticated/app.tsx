@@ -266,9 +266,18 @@ function AppPage() {
                     <FolderPlus className="h-3 w-3" />
                   </button>
                   <button
-                    onClick={() => confirm(`Delete "${d.name}" and everything inside?`) && removeDir.mutate(d.id)}
+                    onClick={async () => {
+                      const ok = await prompt.ask({
+                        title: `Delete "${d.name}"?`,
+                        description: "This permanently removes the notebook and everything inside it.",
+                        confirmOnly: true,
+                        destructive: true,
+                        confirmLabel: "Delete",
+                      });
+                      if (ok !== null) removeDir.mutate(d.id);
+                    }}
                     title="Delete"
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded transition"
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded transition active:scale-90"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
