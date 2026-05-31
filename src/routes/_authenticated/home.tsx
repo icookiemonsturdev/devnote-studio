@@ -163,9 +163,7 @@ function HomePage() {
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/20" />
                     <div className="shine pointer-events-none absolute inset-0" />
-                    <div className="flex items-start justify-between relative">
-                      <BookOpen className="h-6 w-6 text-white/90 transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-110" />
-                    </div>
+                    <div className="relative" />
                     <div className="relative">
                       <div className="text-xs mono text-white/70 mb-1">NOTEBOOK</div>
                       <div className="text-lg font-semibold text-white line-clamp-2">
