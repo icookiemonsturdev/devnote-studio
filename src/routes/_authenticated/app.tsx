@@ -80,7 +80,12 @@ function AppPage() {
 
   const addDir = useMutation({
     mutationFn: async () => {
-      const name = prompt("Directory name");
+      const name = await prompt.ask({
+        title: "New notebook",
+        description: "Give your notebook a memorable name.",
+        placeholder: "e.g. Research, Side project, Journal…",
+        confirmLabel: "Create notebook",
+      });
       if (!name) return null;
       return newDirFn({ data: { name } });
     },
@@ -90,7 +95,12 @@ function AppPage() {
 
   const addFolder = useMutation({
     mutationFn: async (directoryId: string) => {
-      const name = prompt("Folder name");
+      const name = await prompt.ask({
+        title: "New folder",
+        description: "Folders group related notes together.",
+        placeholder: "Folder name",
+        confirmLabel: "Create folder",
+      });
       if (!name) return null;
       return newFolderFn({ data: { name, directoryId } });
     },
