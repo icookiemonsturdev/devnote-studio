@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree, Home,
-  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Type, Palette,
+  Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
   createDirectory, createFolder, createNote,
-  updateNote, deleteNote, deleteFolder, deleteDirectory, updateProfile,
+  updateNote, deleteNote, deleteFolder, deleteDirectory,
 } from "@/lib/notes.functions";
-import { FONTS, getFontStack } from "@/lib/catalog";
+import { getFontStack } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { usePromptDialog } from "@/components/PromptDialog";
 
