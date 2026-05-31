@@ -522,8 +522,8 @@ function NoteEditor({
     { icon: Bold, label: "Bold", action: () => exec("bold"), activeKey: "bold" },
     { icon: Italic, label: "Italic", action: () => exec("italic"), activeKey: "italic" },
     { icon: Underline, label: "Underline", action: () => exec("underline"), activeKey: "underline" },
-    { icon: Code, label: "Code", action: () => exec("formatBlock", "PRE"), activeKey: "pre" },
-    { icon: Quote, label: "Quote", action: () => exec("formatBlock", "BLOCKQUOTE"), activeKey: "blockquote" },
+    { icon: Code, label: "Code", action: () => exec("formatBlock", currentBlock === "pre" ? "P" : "PRE"), activeKey: "pre" },
+    { icon: Quote, label: "Quote", action: () => exec("formatBlock", currentBlock === "blockquote" ? "P" : "BLOCKQUOTE"), activeKey: "blockquote" },
     { icon: List, label: "Bulleted list", action: () => exec("insertUnorderedList"), activeKey: "insertUnorderedList" },
     { icon: ListOrdered, label: "Numbered list", action: () => exec("insertOrderedList"), activeKey: "insertOrderedList" },
     {
