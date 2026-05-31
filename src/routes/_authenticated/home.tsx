@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  BookOpen, Plus, Settings, Sparkles, LogOut, FileCode2, Trash2, Palette, Check, Lock, Pencil,
+  Plus, Settings, Sparkles, LogOut, FileCode2, Trash2, Palette, Check, Lock, Pencil,
 } from "lucide-react";
 import { getWorkspace, createDirectory, deleteDirectory, updateDirectory } from "@/lib/notes.functions";
 import { NOTEBOOK_SKINS } from "@/lib/catalog";
@@ -163,9 +163,7 @@ function HomePage() {
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/20" />
                     <div className="shine pointer-events-none absolute inset-0" />
-                    <div className="flex items-start justify-between relative">
-                      <BookOpen className="h-6 w-6 text-white/90 transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-110" />
-                    </div>
+                    <div className="relative" />
                     <div className="relative">
                       <div className="text-xs mono text-white/70 mb-1">NOTEBOOK</div>
                       <div className="text-lg font-semibold text-white line-clamp-2">
@@ -208,6 +206,7 @@ function HomePage() {
                         confirmOnly: true,
                         destructive: true,
                         confirmLabel: "Delete",
+                        skipKey: "delete-notebook",
                       });
                       if (ok !== null) removeDir.mutate(d.id);
                     }}
