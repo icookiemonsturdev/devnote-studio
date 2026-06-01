@@ -1124,6 +1124,21 @@ function NoteEditor({
         })}
         <div className="w-px h-5 bg-border mx-1" />
         <ColorPicker currentColor={currentColor} onPick={(color) => exec("foreColor", color)} />
+        <div className="w-px h-5 bg-border mx-1" />
+        <button
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setVimEnabled((v) => !v)}
+          title={vimEnabled ? "Disable Vim mode" : "Enable Vim mode"}
+          aria-pressed={vimEnabled}
+          className={`p-2 rounded transition-all duration-150 active:scale-90 flex items-center gap-1.5 ${
+            vimEnabled
+              ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
+              : "hover:bg-muted text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Terminal className="h-4 w-4" />
+          <span className="text-[10px] mono uppercase tracking-wider">Vim</span>
+        </button>
       </div>
 
       <div
@@ -1138,9 +1153,29 @@ function NoteEditor({
         onClick={handleEditorClick}
         onFocus={refreshActiveFormats}
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
+        data-vim-mode={vimEnabled ? vimMode : "off"}
         className="prose-editor editor-paper flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
-        style={{ fontFamily: editorBodyStack }}
+        style={{ fontFamily: editorBodyStack, caretColor: vimEnabled && vimMode !== "insert" ? "transparent" : undefined }}
       />
+
+      {vimEnabled && (
+        <div className="px-8 py-1.5 border-t border-border bg-muted/40 flex items-center gap-3 text-[11px] mono">
+          <span
+            className={`px-2 py-0.5 rounded font-semibold uppercase tracking-wider ${
+              vimMode === "insert"
+                ? "bg-green-500/20 text-green-400"
+                : vimMode === "visual"
+                ? "bg-yellow-500/20 text-yellow-400"
+                : "bg-primary/20 text-primary"
+            }`}
+          >
+            -- {vimMode} --
+          </span>
+          <span className="text-muted-foreground">
+            i insert · Esc normal · h/j/k/l move · w/b word · 0/$ line · gg/G doc · x del · dd cut · yy yank · p paste · u undo · v visual
+          </span>
+        </div>
+      )}
 
       <style>{`
         .prose-editor:empty:before {
