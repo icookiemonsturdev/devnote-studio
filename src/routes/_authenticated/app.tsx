@@ -941,6 +941,17 @@ function NoteEditor({
   }
 
   function handleEditorKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    // Vim mode interception
+    if (vimEnabled) {
+      if (vimMode !== "insert") {
+        if (handleVimKey(e)) return;
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setVimMode("normal");
+        return;
+      }
+    }
+
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const node: Node | null = sel.anchorNode;
