@@ -29,7 +29,6 @@ function SettingsPage() {
     if (profile) {
       setDisplayName(profile.display_name ?? "");
       setAvatarUrl(profile.avatar_url ?? "");
-      document.documentElement.setAttribute("data-skin", profile.active_skin ?? "midnight");
     }
   }, [profile]);
 

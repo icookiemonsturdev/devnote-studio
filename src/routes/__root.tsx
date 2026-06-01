@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/hooks/use-auth";
-import { MatrixRain } from "@/components/MatrixRain";
+
 
 import appCss from "../styles.css?url";
 
@@ -94,10 +94,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <MatrixRain />
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <Outlet />
-        </div>
+        <Outlet />
         <Toaster theme="dark" position="bottom-right" />
       </AuthProvider>
     </QueryClientProvider>
