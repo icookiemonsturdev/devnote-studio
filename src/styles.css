@@ -35,9 +35,37 @@
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
-/* Default skin: Midnight Indigo */
-:root,
-[data-skin="midnight"] {
+:root {
+  --radius: 0.625rem;
+  --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --background: oklch(0.13 0.04 270);
+  --foreground: oklch(0.96 0.01 260);
+  --card: oklch(0.18 0.05 270);
+  --card-foreground: oklch(0.96 0.01 260);
+  --popover: oklch(0.18 0.05 270);
+  --popover-foreground: oklch(0.96 0.01 260);
+  --primary: oklch(0.62 0.22 275);
+  --primary-foreground: oklch(0.98 0 0);
+  --primary-glow: oklch(0.72 0.20 280);
+  --secondary: oklch(0.24 0.05 270);
+  --secondary-foreground: oklch(0.96 0.01 260);
+  --muted: oklch(0.22 0.04 270);
+  --muted-foreground: oklch(0.68 0.03 260);
+  --accent: oklch(0.30 0.10 275);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.28 0.05 270);
+  --input: oklch(0.25 0.05 270);
+  --ring: oklch(0.62 0.22 275);
+  --sidebar: oklch(0.10 0.04 270);
+  --sidebar-foreground: oklch(0.92 0.01 260);
+  --sidebar-border: oklch(0.22 0.05 270);
+  --gradient-primary: linear-gradient(135deg, oklch(0.62 0.22 275), oklch(0.55 0.24 290));
+  --gradient-surface: linear-gradient(180deg, oklch(0.13 0.04 270), oklch(0.10 0.04 275));
+  --shadow-glow: 0 0 40px -8px oklch(0.62 0.22 275 / 0.4);
+}
   --radius: 0.625rem;
   --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
