@@ -58,11 +58,6 @@ function AppPage() {
     setActiveNoteId(null);
   }, [dirParam, workspace.data]);
 
-  // Apply only the editor skin globally; fonts are scoped to the editor itself.
-  useEffect(() => {
-    const skin = workspace.data?.profile?.active_skin ?? "midnight";
-    document.documentElement.setAttribute("data-skin", skin);
-  }, [workspace.data?.profile?.active_skin]);
 
   const notesQuery = useQuery({
     queryKey: ["notes", activeFolder],

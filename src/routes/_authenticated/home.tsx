@@ -38,10 +38,6 @@ function HomePage() {
 
   const workspace = useQuery({ queryKey: ["workspace"], queryFn: () => wsFn() });
 
-  useEffect(() => {
-    const skin = workspace.data?.profile?.active_skin ?? "midnight";
-    document.documentElement.setAttribute("data-skin", skin);
-  }, [workspace.data?.profile?.active_skin]);
 
   const addDir = useMutation({
     mutationFn: async () => {
