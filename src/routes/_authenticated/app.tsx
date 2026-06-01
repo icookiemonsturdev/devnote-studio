@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, FolderPlus, FilePlus, Trash2,
   FileCode2, Settings, Sparkles, LogOut, Folder, FileText, FolderTree,
   Bold, Italic, Underline, List, ListOrdered, Code, Link as LinkIcon, Palette,
-  Search, X, CheckSquare, Table as TableIcon,
+  Search, X, CheckSquare, Table as TableIcon, Terminal,
 } from "lucide-react";
 import {
   getWorkspace, getNotesByFolder, getNote,
@@ -586,6 +586,184 @@ function NoteEditor({
   const [activeFormats, setActiveFormats] = useState<Record<string, boolean>>({});
   const [currentBlock, setCurrentBlock] = useState<string>("p");
   const [currentColor, setCurrentColor] = useState<string>("#a855f7");
+
+  // ---------- Vim mode ----------
+  const [vimEnabled, setVimEnabled] = useState<boolean>(() => {
+    try { return typeof localStorage !== "undefined" && localStorage.getItem("dev_notes_vim") === "1"; } catch { return false; }
+  });
+  const [vimMode, setVimMode] = useState<"normal" | "insert" | "visual">("normal");
+  const vimPendingRef = useRef<string>("");
+  const vimYankRef = useRef<{ kind: "line" | "chars"; text: string } | null>(null);
+
+  useEffect(() => {
+    try { localStorage.setItem("dev_notes_vim", vimEnabled ? "1" : "0"); } catch { /* ignore */ }
+    if (vimEnabled) setVimMode("normal");
+  }, [vimEnabled]);
+
+  function vimMove(alter: "move" | "extend", direction: "left" | "right" | "forward" | "backward", granularity: string) {
+    const sel = window.getSelection();
+    if (!sel) return;
+    try { (sel as any).modify(alter, direction, granularity); } catch { /* unsupported */ }
+  }
+
+  function getVimBlock(): HTMLElement | null {
+    const sel = window.getSelection();
+    const root = editorRef.current;
+    if (!sel || !root || !sel.anchorNode) return null;
+    let n: Node | null = sel.anchorNode;
+    if (n.nodeType === Node.TEXT_NODE) n = n.parentNode;
+    while (n && n !== root) {
+      const name = (n as HTMLElement).tagName;
+      if (name && /^(P|H[1-6]|PRE|LI|BLOCKQUOTE|DIV|TD)$/i.test(name)) return n as HTMLElement;
+      n = n.parentNode;
+    }
+    return null;
+  }
+
+  function vimInsertBlock(above: boolean) {
+    const blk = getVimBlock();
+    if (!blk || !blk.parentNode) return;
+    const p = document.createElement("p");
+    p.innerHTML = "<br>";
+    blk.parentNode.insertBefore(p, above ? blk : blk.nextSibling);
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+  }
+
+  function handleVimKey(e: React.KeyboardEvent<HTMLDivElement>): boolean {
+    const key = e.key;
+    const alter: "move" | "extend" = vimMode === "visual" ? "extend" : "move";
+
+    if (vimPendingRef.current) {
+      e.preventDefault();
+      const combo = vimPendingRef.current + key;
+      vimPendingRef.current = "";
+      if (combo === "dd") {
+        const blk = getVimBlock();
+        if (blk && blk.parentNode) {
+          vimYankRef.current = { kind: "line", text: blk.textContent ?? "" };
+          const next = (blk.nextElementSibling || blk.previousElementSibling) as HTMLElement | null;
+          blk.remove();
+          if (next) {
+            const range = document.createRange();
+            range.selectNodeContents(next);
+            range.collapse(true);
+            const sel = window.getSelection();
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+          }
+          if (editorRef.current) setContent(editorRef.current.innerHTML);
+        }
+      } else if (combo === "yy") {
+        const blk = getVimBlock();
+        if (blk) vimYankRef.current = { kind: "line", text: blk.textContent ?? "" };
+      } else if (combo === "gg") {
+        vimMove(alter, "backward", "documentboundary");
+      }
+      return true;
+    }
+
+    switch (key) {
+      case "Escape":
+        e.preventDefault();
+        setVimMode("normal");
+        window.getSelection()?.collapseToEnd();
+        return true;
+      case "i": e.preventDefault(); setVimMode("insert"); return true;
+      case "a": e.preventDefault(); vimMove("move", "right", "character"); setVimMode("insert"); return true;
+      case "A": e.preventDefault(); vimMove("move", "forward", "lineboundary"); setVimMode("insert"); return true;
+      case "I": e.preventDefault(); vimMove("move", "backward", "lineboundary"); setVimMode("insert"); return true;
+      case "o": e.preventDefault(); vimInsertBlock(false); setVimMode("insert"); return true;
+      case "O": e.preventDefault(); vimInsertBlock(true); setVimMode("insert"); return true;
+      case "h": e.preventDefault(); vimMove(alter, "left", "character"); return true;
+      case "l": e.preventDefault(); vimMove(alter, "right", "character"); return true;
+      case "j": e.preventDefault(); vimMove(alter, "forward", "line"); return true;
+      case "k": e.preventDefault(); vimMove(alter, "backward", "line"); return true;
+      case "w":
+      case "e": e.preventDefault(); vimMove(alter, "forward", "word"); return true;
+      case "b": e.preventDefault(); vimMove(alter, "backward", "word"); return true;
+      case "0": e.preventDefault(); vimMove(alter, "backward", "lineboundary"); return true;
+      case "$": e.preventDefault(); vimMove(alter, "forward", "lineboundary"); return true;
+      case "G": e.preventDefault(); vimMove(alter, "forward", "documentboundary"); return true;
+      case "g": e.preventDefault(); vimPendingRef.current = "g"; return true;
+      case "v": e.preventDefault(); setVimMode(vimMode === "visual" ? "normal" : "visual"); return true;
+      case "x":
+        e.preventDefault();
+        document.execCommand("forwardDelete");
+        if (editorRef.current) setContent(editorRef.current.innerHTML);
+        return true;
+      case "u":
+        e.preventDefault();
+        document.execCommand("undo");
+        if (editorRef.current) setContent(editorRef.current.innerHTML);
+        return true;
+      case "r":
+        if (e.ctrlKey) {
+          e.preventDefault();
+          document.execCommand("redo");
+          if (editorRef.current) setContent(editorRef.current.innerHTML);
+        } else {
+          e.preventDefault();
+        }
+        return true;
+      case "d":
+        e.preventDefault();
+        if (vimMode === "visual") {
+          document.execCommand("delete");
+          setVimMode("normal");
+          if (editorRef.current) setContent(editorRef.current.innerHTML);
+        } else {
+          vimPendingRef.current = "d";
+        }
+        return true;
+      case "y":
+        e.preventDefault();
+        if (vimMode === "visual") {
+          vimYankRef.current = { kind: "chars", text: window.getSelection()?.toString() ?? "" };
+          setVimMode("normal");
+          window.getSelection()?.collapseToEnd();
+        } else {
+          vimPendingRef.current = "y";
+        }
+        return true;
+      case "p": {
+        e.preventDefault();
+        const buf = vimYankRef.current;
+        if (!buf) return true;
+        if (buf.kind === "line") {
+          const blk = getVimBlock();
+          if (blk && blk.parentNode) {
+            const p = document.createElement("p");
+            p.textContent = buf.text;
+            blk.parentNode.insertBefore(p, blk.nextSibling);
+            const range = document.createRange();
+            range.selectNodeContents(p);
+            range.collapse(true);
+            const sel = window.getSelection();
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+          }
+        } else {
+          document.execCommand("insertText", false, buf.text);
+        }
+        if (editorRef.current) setContent(editorRef.current.innerHTML);
+        return true;
+      }
+      default:
+        // Block all other printable single-character keys to prevent typing in normal/visual.
+        if (key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          return true;
+        }
+        return false;
+    }
+  }
+  // ---------- end vim ----------
 
   function rgbToHex(rgb: string): string {
     const m = rgb.match(/\d+/g);
