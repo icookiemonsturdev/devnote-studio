@@ -67,7 +67,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Notes built for developers." },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Bebas+Neue&family=Abril+Fatface&family=Share+Tech+Mono&family=VT323&family=Cinzel:wght@500;700&family=Cormorant+Garamond:wght@500;600;700&family=Caveat:wght@500;700&family=Quicksand:wght@500;600;700&family=Orbitron:wght@500;700&family=Audiowide&family=Special+Elite&family=Russo+One&display=swap" },
+      { rel: "stylesheet", href: appCss },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
