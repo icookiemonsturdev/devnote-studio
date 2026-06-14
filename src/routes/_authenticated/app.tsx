@@ -1115,6 +1115,7 @@ function NoteEditor({
         }
         return false;
     }
+    return false;
   }
   // ---------- end vim ----------
 
