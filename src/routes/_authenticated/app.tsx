@@ -592,13 +592,108 @@ function NoteEditor({
     try { return typeof localStorage !== "undefined" && localStorage.getItem("dev_notes_vim") === "1"; } catch { return false; }
   });
   const [vimMode, setVimMode] = useState<"normal" | "insert" | "visual">("normal");
+  const [vimFeedback, setVimFeedback] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const vimPendingRef = useRef<string>("");
+  const vimPendingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const vimYankRef = useRef<{ kind: "line" | "chars"; text: string } | null>(null);
+  const vimVisualStartRef = useRef<{ node: Node; offset: number } | null>(null);
+  const vimLastYankTimeRef = useRef<number>(0);
+  const vimHistoryRef = useRef<{ html: string; cursorPath?: { node: number[]; offset: number } }[]>([]);
+  const vimHistoryIndexRef = useRef<number>(-1);
 
   useEffect(() => {
     try { localStorage.setItem("dev_notes_vim", vimEnabled ? "1" : "0"); } catch { /* ignore */ }
     if (vimEnabled) setVimMode("normal");
   }, [vimEnabled]);
+
+  useEffect(() => {
+    if (vimFeedback) {
+      const timer = setTimeout(() => setVimFeedback(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [vimFeedback]);
+
+  useEffect(() => {
+    return () => {
+      if (vimPendingTimeoutRef.current) clearTimeout(vimPendingTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (vimEnabled && editorRef.current) {
+      vimHistoryRef.current = [{ html: editorRef.current.innerHTML }];
+      vimHistoryIndexRef.current = 0;
+    }
+  }, [vimEnabled]);
+
+  function vimPushHistory() {
+    if (!editorRef.current) return;
+    vimHistoryIndexRef.current++;
+    vimHistoryRef.current = vimHistoryRef.current.slice(0, vimHistoryIndexRef.current);
+
+    // Save cursor position
+    let cursorPath: { node: number[]; offset: number } | undefined;
+    const sel = window.getSelection();
+    if (sel && sel.anchorNode) {
+      const path: number[] = [];
+      let node: Node | null = sel.anchorNode;
+      const root = editorRef.current;
+
+      // Build path from node to root
+      while (node && node !== root) {
+        const parent = node.parentNode;
+        if (parent) {
+          let index = 0;
+          for (let i = 0; i < parent.childNodes.length; i++) {
+            if (parent.childNodes[i] === node) {
+              index = i;
+              break;
+            }
+          }
+          path.unshift(index);
+        }
+        node = parent;
+      }
+
+      cursorPath = { node: path, offset: sel.anchorOffset };
+    }
+
+    vimHistoryRef.current.push({
+      html: editorRef.current.innerHTML,
+      cursorPath
+    });
+  }
+
+  function vimRestoreCursor(cursorPath?: { node: number[]; offset: number }) {
+    if (!editorRef.current || !cursorPath) return;
+
+    try {
+      let node: Node = editorRef.current;
+
+      // Follow path to find node
+      for (const index of cursorPath.node) {
+        if (index < node.childNodes.length) {
+          node = node.childNodes[index];
+        } else {
+          return; // Path invalid
+        }
+      }
+
+      const range = document.createRange();
+      if (node.nodeType === Node.TEXT_NODE) {
+        range.setStart(node, Math.min(cursorPath.offset, (node.textContent || "").length));
+      } else {
+        range.selectNodeContents(node);
+        range.collapse(true);
+      }
+
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    } catch (e) {
+      // If restoration fails, just continue without cursor positioning
+    }
+  }
 
   function vimMove(alter: "move" | "extend", direction: "left" | "right" | "forward" | "backward", granularity: string) {
     const sel = window.getSelection();
@@ -639,16 +734,39 @@ function NoteEditor({
     const key = e.key;
     const alter: "move" | "extend" = vimMode === "visual" ? "extend" : "move";
 
+    // Check if we're in a pending command state (waiting for second keystroke)
     if (vimPendingRef.current) {
       e.preventDefault();
       const combo = vimPendingRef.current + key;
+
+      // Check if this should be a three-character combo (e.g., caw, diw)
+      if ((combo === "ca" || combo === "ci") && vimPendingTimeoutRef.current) {
+        // Wait for text object motion (a/i + motion like w, b, etc.)
+        vimPendingRef.current = combo;
+        clearTimeout(vimPendingTimeoutRef.current);
+        vimPendingTimeoutRef.current = setTimeout(() => {
+          vimPendingRef.current = "";
+          vimPendingTimeoutRef.current = null;
+          setVimFeedback({ type: "error", text: "Incomplete text object" });
+        }, 500);
+        return true;
+      }
+
       vimPendingRef.current = "";
+      if (vimPendingTimeoutRef.current) {
+        clearTimeout(vimPendingTimeoutRef.current);
+        vimPendingTimeoutRef.current = null;
+      }
+
       if (combo === "dd") {
         const blk = getVimBlock();
         if (blk && blk.parentNode) {
           vimYankRef.current = { kind: "line", text: blk.textContent ?? "" };
-          const next = (blk.nextElementSibling || blk.previousElementSibling) as HTMLElement | null;
+          const next = blk.nextElementSibling as HTMLElement | null;
+          const prev = blk.previousElementSibling as HTMLElement | null;
           blk.remove();
+
+          // Place cursor in the next or previous sibling
           if (next) {
             const range = document.createRange();
             range.selectNodeContents(next);
@@ -656,21 +774,157 @@ function NoteEditor({
             const sel = window.getSelection();
             sel?.removeAllRanges();
             sel?.addRange(range);
+          } else if (prev && editorRef.current && editorRef.current.children.length > 0) {
+            const range = document.createRange();
+            range.selectNodeContents(prev);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+          } else if (editorRef.current && editorRef.current.children.length === 0) {
+            const p = document.createElement("p");
+            p.innerHTML = "<br>";
+            editorRef.current.appendChild(p);
+            const range = document.createRange();
+            range.selectNodeContents(p);
+            range.collapse(true);
+            const sel = window.getSelection();
+            sel?.removeAllRanges();
+            sel?.addRange(range);
           }
-          if (editorRef.current) setContent(editorRef.current.innerHTML);
+          if (editorRef.current) {
+            setContent(editorRef.current.innerHTML);
+            vimPushHistory();
+          }
         }
       } else if (combo === "yy") {
         const blk = getVimBlock();
-        if (blk) vimYankRef.current = { kind: "line", text: blk.textContent ?? "" };
+        if (blk) {
+          vimYankRef.current = { kind: "line", text: blk.textContent ?? "" };
+          vimLastYankTimeRef.current = Date.now();
+          setVimFeedback({ type: "success", text: `Yanked ${blk.textContent?.length ?? 0} chars` });
+        }
       } else if (combo === "gg") {
         vimMove(alter, "backward", "documentboundary");
+      } else if (combo === "caw") {
+        // Change a word (entire word + whitespace)
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          // Move to start of word
+          vimMove("move", "backward", "word");
+          // Extend to end of word
+          vimMove("extend", "forward", "word");
+          // Extend to include trailing space if present
+          const range = sel.getRangeAt(0);
+          const endContainer = range.endContainer;
+          if (endContainer.nodeType === Node.TEXT_NODE) {
+            const text = endContainer.textContent || "";
+            const endOffset = range.endOffset;
+            if (endOffset < text.length && text[endOffset] === " ") {
+              range.setEnd(endContainer, endOffset + 1);
+            }
+          }
+        }
+        document.execCommand("delete");
+        setVimMode("insert");
+        if (editorRef.current) {
+          setContent(editorRef.current.innerHTML);
+          vimPushHistory();
+        }
+      } else if (combo === "ciw") {
+        // Change inner word (word only, no whitespace)
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          // Move to start of word
+          vimMove("move", "backward", "word");
+          // Extend to end of word
+          vimMove("extend", "forward", "word");
+        }
+        document.execCommand("delete");
+        setVimMode("insert");
+        if (editorRef.current) {
+          setContent(editorRef.current.innerHTML);
+          vimPushHistory();
+        }
+      } else if (combo === "daw") {
+        // Delete a word (entire word + whitespace)
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          // Move to start of word
+          vimMove("move", "backward", "word");
+          // Extend to end of word
+          vimMove("extend", "forward", "word");
+          // Extend to include trailing space if present
+          const range = sel.getRangeAt(0);
+          const endContainer = range.endContainer;
+          if (endContainer.nodeType === Node.TEXT_NODE) {
+            const text = endContainer.textContent || "";
+            const endOffset = range.endOffset;
+            if (endOffset < text.length && text[endOffset] === " ") {
+              range.setEnd(endContainer, endOffset + 1);
+            }
+          }
+        }
+        document.execCommand("delete");
+        if (editorRef.current) {
+          setContent(editorRef.current.innerHTML);
+          vimPushHistory();
+        }
+      } else if (combo === "diw") {
+        // Delete inner word (word only, no whitespace)
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          // Move to start of word
+          vimMove("move", "backward", "word");
+          // Extend to end of word
+          vimMove("extend", "forward", "word");
+        }
+        document.execCommand("delete");
+        if (editorRef.current) {
+          setContent(editorRef.current.innerHTML);
+          vimPushHistory();
+        }
+      } else if (combo.startsWith("c")) {
+        // Handle change operator: cw, ce, cb, ca (for text objects like caw, ciw)
+        const motion = combo[1];
+        const sel = window.getSelection();
+        if (!sel) return true;
+
+        vimPushHistory();
+
+        if (motion === "w" || motion === "e") {
+          // Change word
+          vimMove("extend", "forward", "word");
+          document.execCommand("delete");
+        } else if (motion === "b") {
+          // Change back word
+          vimMove("extend", "backward", "word");
+          document.execCommand("delete");
+        } else if (motion === "a") {
+          // Text object: caw, ciw, etc. - need third character
+          setVimFeedback({ type: "error", text: "Text object requires motion (aw, iw, etc.)" });
+          return true;
+        }
+
+        setVimMode("insert");
+        if (editorRef.current) setContent(editorRef.current.innerHTML);
+      } else {
+        // Invalid two-character command
+        setVimFeedback({ type: "error", text: `Invalid command: ${combo}` });
       }
       return true;
     }
 
     switch (key) {
       case "Escape":
+      case "[":
+        if (key === "[" && !e.ctrlKey) break;
         e.preventDefault();
+        if (vimPendingTimeoutRef.current) {
+          clearTimeout(vimPendingTimeoutRef.current);
+          vimPendingTimeoutRef.current = null;
+        }
+        vimPendingRef.current = "";
         setVimMode("normal");
         window.getSelection()?.collapseToEnd();
         return true;
@@ -686,29 +940,90 @@ function NoteEditor({
       case "k": e.preventDefault(); vimMove(alter, "backward", "line"); return true;
       case "w":
       case "e": e.preventDefault(); vimMove(alter, "forward", "word"); return true;
+      case "W": e.preventDefault(); vimMove(alter, "forward", "word"); return true;
       case "b": e.preventDefault(); vimMove(alter, "backward", "word"); return true;
       case "0": e.preventDefault(); vimMove(alter, "backward", "lineboundary"); return true;
       case "$": e.preventDefault(); vimMove(alter, "forward", "lineboundary"); return true;
       case "G": e.preventDefault(); vimMove(alter, "forward", "documentboundary"); return true;
-      case "g": e.preventDefault(); vimPendingRef.current = "g"; return true;
-      case "v": e.preventDefault(); setVimMode(vimMode === "visual" ? "normal" : "visual"); return true;
+      case "g":
+        e.preventDefault();
+        vimPendingRef.current = "g";
+        if (vimPendingTimeoutRef.current) clearTimeout(vimPendingTimeoutRef.current);
+        vimPendingTimeoutRef.current = setTimeout(() => {
+          vimPendingRef.current = "";
+          vimPendingTimeoutRef.current = null;
+          setVimFeedback({ type: "error", text: "Incomplete command" });
+        }, 500);
+        return true;
+      case "v":
+        e.preventDefault();
+        if (vimMode === "visual") {
+          setVimMode("normal");
+          window.getSelection()?.collapseToEnd();
+          vimVisualStartRef.current = null;
+        } else {
+          // Enter visual mode - anchor the selection at current position
+          const sel = window.getSelection();
+          if (sel && sel.anchorNode) {
+            vimVisualStartRef.current = { node: sel.anchorNode, offset: sel.anchorOffset };
+          }
+          setVimMode("visual");
+        }
+        return true;
       case "x":
         e.preventDefault();
         document.execCommand("forwardDelete");
-        if (editorRef.current) setContent(editorRef.current.innerHTML);
+        if (editorRef.current) {
+          setContent(editorRef.current.innerHTML);
+          vimPushHistory();
+        }
         return true;
       case "u":
         e.preventDefault();
-        document.execCommand("undo");
-        if (editorRef.current) setContent(editorRef.current.innerHTML);
+        if (vimHistoryIndexRef.current > 0) {
+          vimHistoryIndexRef.current--;
+          const entry = vimHistoryRef.current[vimHistoryIndexRef.current];
+          if (editorRef.current) {
+            editorRef.current.innerHTML = entry.html;
+            setContent(entry.html);
+            vimRestoreCursor(entry.cursorPath);
+            // Move cursor to end of line
+            setTimeout(() => vimMove("move", "forward", "lineboundary"), 0);
+          }
+        }
         return true;
       case "r":
         if (e.ctrlKey) {
           e.preventDefault();
-          document.execCommand("redo");
-          if (editorRef.current) setContent(editorRef.current.innerHTML);
+          if (vimHistoryIndexRef.current < vimHistoryRef.current.length - 1) {
+            vimHistoryIndexRef.current++;
+            const entry = vimHistoryRef.current[vimHistoryIndexRef.current];
+            if (editorRef.current) {
+              editorRef.current.innerHTML = entry.html;
+              setContent(entry.html);
+              vimRestoreCursor(entry.cursorPath);
+            }
+          }
         } else {
           e.preventDefault();
+        }
+        return true;
+      case "c":
+        e.preventDefault();
+        if (vimMode === "visual") {
+          vimPushHistory();
+          document.execCommand("delete");
+          setVimMode("insert");
+          vimVisualStartRef.current = null;
+          if (editorRef.current) setContent(editorRef.current.innerHTML);
+        } else {
+          vimPendingRef.current = "c";
+          if (vimPendingTimeoutRef.current) clearTimeout(vimPendingTimeoutRef.current);
+          vimPendingTimeoutRef.current = setTimeout(() => {
+            vimPendingRef.current = "";
+            vimPendingTimeoutRef.current = null;
+            setVimFeedback({ type: "error", text: "No motion after c" });
+          }, 500);
         }
         return true;
       case "d":
@@ -716,25 +1031,60 @@ function NoteEditor({
         if (vimMode === "visual") {
           document.execCommand("delete");
           setVimMode("normal");
-          if (editorRef.current) setContent(editorRef.current.innerHTML);
+          vimVisualStartRef.current = null;
+          if (editorRef.current) {
+            setContent(editorRef.current.innerHTML);
+            vimPushHistory();
+          }
         } else {
           vimPendingRef.current = "d";
+          if (vimPendingTimeoutRef.current) clearTimeout(vimPendingTimeoutRef.current);
+          vimPendingTimeoutRef.current = setTimeout(() => {
+            vimPendingRef.current = "";
+            vimPendingTimeoutRef.current = null;
+            setVimFeedback({ type: "error", text: "No motion after d" });
+          }, 500);
+        }
+        return true;
+      case "C":
+        e.preventDefault();
+        vimMove("extend", "forward", "lineboundary");
+        document.execCommand("delete");
+        setVimMode("insert");
+        if (editorRef.current) {
+          setContent(editorRef.current.innerHTML);
+          vimPushHistory();
         }
         return true;
       case "y":
         e.preventDefault();
         if (vimMode === "visual") {
-          vimYankRef.current = { kind: "chars", text: window.getSelection()?.toString() ?? "" };
+          const yankText = window.getSelection()?.toString();
+          if (yankText) {
+            vimYankRef.current = { kind: "chars", text: yankText };
+            vimLastYankTimeRef.current = Date.now();
+            setVimFeedback({ type: "success", text: `Yanked ${yankText.length} chars` });
+          }
           setVimMode("normal");
+          vimVisualStartRef.current = null;
           window.getSelection()?.collapseToEnd();
         } else {
           vimPendingRef.current = "y";
+          if (vimPendingTimeoutRef.current) clearTimeout(vimPendingTimeoutRef.current);
+          vimPendingTimeoutRef.current = setTimeout(() => {
+            vimPendingRef.current = "";
+            vimPendingTimeoutRef.current = null;
+            setVimFeedback({ type: "error", text: "No motion after y" });
+          }, 500);
         }
         return true;
       case "p": {
         e.preventDefault();
         const buf = vimYankRef.current;
-        if (!buf) return true;
+        if (!buf) {
+          setVimFeedback({ type: "error", text: "Nothing to paste" });
+          return true;
+        }
         if (buf.kind === "line") {
           const blk = getVimBlock();
           if (blk && blk.parentNode) {
@@ -751,7 +1101,10 @@ function NoteEditor({
         } else {
           document.execCommand("insertText", false, buf.text);
         }
-        if (editorRef.current) setContent(editorRef.current.innerHTML);
+        if (editorRef.current) {
+          setContent(editorRef.current.innerHTML);
+          vimPushHistory();
+        }
         return true;
       }
       default:
@@ -945,7 +1298,7 @@ function NoteEditor({
     if (vimEnabled) {
       if (vimMode !== "insert") {
         if (handleVimKey(e)) return;
-      } else if (e.key === "Escape") {
+      } else if (e.key === "Escape" || (e.ctrlKey && e.key === "[")) {
         e.preventDefault();
         setVimMode("normal");
         return;
@@ -1145,7 +1498,42 @@ function NoteEditor({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        onInput={(e) => { setContent((e.target as HTMLDivElement).innerHTML); refreshActiveFormats(); }}
+        onInput={(e) => {
+          const html = (e.target as HTMLDivElement).innerHTML;
+          setContent(html);
+          if (vimEnabled && vimMode === "insert") {
+            vimHistoryIndexRef.current++;
+            vimHistoryRef.current = vimHistoryRef.current.slice(0, vimHistoryIndexRef.current);
+
+            let cursorPath: { node: number[]; offset: number } | undefined;
+            const sel = window.getSelection();
+            if (sel && sel.anchorNode) {
+              const path: number[] = [];
+              let node: Node | null = sel.anchorNode;
+              const root = editorRef.current;
+
+              while (node && node !== root) {
+                const parent = node.parentNode;
+                if (parent) {
+                  let index = 0;
+                  for (let i = 0; i < parent.childNodes.length; i++) {
+                    if (parent.childNodes[i] === node) {
+                      index = i;
+                      break;
+                    }
+                  }
+                  path.unshift(index);
+                }
+                node = parent;
+              }
+
+              cursorPath = { node: path, offset: sel.anchorOffset };
+            }
+
+            vimHistoryRef.current.push({ html, cursorPath });
+          }
+          refreshActiveFormats();
+        }}
         onBlur={saveSelection}
         onKeyDown={handleEditorKeyDown}
         onKeyUp={() => { saveSelection(); refreshActiveFormats(); }}
@@ -1155,29 +1543,36 @@ function NoteEditor({
         data-placeholder="Start writing… use the toolbar for headings, lists, color, and more."
         data-vim-mode={vimEnabled ? vimMode : "off"}
         className="prose-editor editor-paper flex-1 bg-transparent px-8 py-6 text-sm leading-relaxed focus:outline-none overflow-y-auto"
-        style={{ fontFamily: editorBodyStack, caretColor: vimEnabled && vimMode !== "insert" ? "transparent" : undefined }}
+        style={{ fontFamily: editorBodyStack }}
       />
 
       {vimEnabled && (
         <div className="px-8 py-1.5 border-t border-border bg-muted/40 flex items-center gap-3 text-[11px] mono">
           <span
-            className={`px-2 py-0.5 rounded font-semibold uppercase tracking-wider ${
-              vimMode === "insert"
+            className={`px-2 py-0.5 rounded font-semibold uppercase tracking-wider transition-colors ${
+              vimFeedback
+                ? vimFeedback.type === "error"
+                  ? "bg-red-500/20 text-red-400"
+                  : "bg-green-500/20 text-green-400"
+                : vimMode === "insert"
                 ? "bg-green-500/20 text-green-400"
                 : vimMode === "visual"
                 ? "bg-yellow-500/20 text-yellow-400"
                 : "bg-primary/20 text-primary"
             }`}
           >
-            -- {vimMode} --
+            {vimFeedback ? vimFeedback.text : `-- ${vimPendingRef.current ? `normal: waiting for ${vimPendingRef.current}` : vimMode} --`}
           </span>
           <span className="text-muted-foreground">
-            i insert · Esc normal · h/j/k/l move · w/b word · 0/$ line · gg/G doc · x del · dd cut · yy yank · p paste · u undo · v visual
+            i insert · Esc/Ctrl+[ normal · h/j/k/l move · w/b/W word · 0/$ line · gg/G doc · x del · dd cut · yy yank · p paste · C change · A append · u undo · Ctrl+r redo · v visual
           </span>
         </div>
       )}
 
       <style>{`
+        .prose-editor { caret-color: currentColor; caret-shape: block; }
+        .prose-editor[data-vim-mode="normal"] { caret-color: rgb(59 130 246); caret-shape: block; }
+        .prose-editor[data-vim-mode="visual"] { caret-color: rgb(234 179 8); caret-shape: block; }
         .prose-editor:empty:before {
           content: attr(data-placeholder);
           color: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
