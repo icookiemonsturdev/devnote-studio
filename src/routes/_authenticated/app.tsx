@@ -641,7 +641,7 @@ function NoteEditor({
 
       // Build path from node to root
       while (node && node !== root) {
-        const parent = node.parentNode;
+        const parent: ParentNode | null = node.parentNode;
         if (parent) {
           let index = 0;
           for (let i = 0; i < parent.childNodes.length; i++) {
